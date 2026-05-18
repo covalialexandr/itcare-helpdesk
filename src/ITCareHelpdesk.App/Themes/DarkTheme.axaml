@@ -1,0 +1,91 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Suprascrieri ale theme variant-ului Dark din Fluent ca sa-l aliniem la paleta noastra.
+         Daca nu facem asta, controalele Fluent (TextBox, Button) raman cu albastrul lor implicit. -->
+
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{DynamicResource BgVoid}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FontDisplay}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="FontFamily" Value="{DynamicResource FontDisplay}" />
+    </Style>
+
+    <Style Selector="TextBlock.h1">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH1}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="LetterSpacing" Value="-1.2" />
+    </Style>
+
+    <Style Selector="TextBlock.h2">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH2}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LetterSpacing" Value="-0.6" />
+    </Style>
+
+    <Style Selector="TextBlock.h3">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeH3}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style Selector="TextBlock.body">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+    </Style>
+
+    <Style Selector="TextBlock.muted">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSmall}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
+    </Style>
+
+    <Style Selector="TextBlock.label">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeMicro}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LetterSpacing" Value="1.5" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
+    </Style>
+
+    <Style Selector="TextBlock.mono">
+        <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
+        <Setter Property="LetterSpacing" Value="0.5" />
+    </Style>
+
+    <!-- Display-ul mare folosit in splash, login etc.; e supradimensionat ca sa creeze impact.
+         Avalonia 11 interpoleaza automat intre SolidColorBrush-uri pentru Foreground;
+         deci o lista de KeyFrames cu valori #RGB produce un "morph" continuu de culori. -->
+    <Style Selector="TextBlock.display">
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeDisplay}" />
+        <Setter Property="FontWeight" Value="Black" />
+        <Setter Property="LetterSpacing" Value="-2.5" />
+        <Setter Property="LineHeight" Value="68" />
+        <Style.Animations>
+            <!-- 8 secunde per ciclu — destul cat sa vezi tranzitia, putin cat sa nu enerveze.
+                 4 stops fac un "ringo" complet: cyan -> indigo -> purple -> magenta -> cyan. -->
+            <Animation Duration="0:0:8" IterationCount="INFINITE" Easing="SineEaseInOut">
+                <KeyFrame Cue="0%">   <Setter Property="Foreground" Value="#43BAFF" /></KeyFrame>
+                <KeyFrame Cue="33%">  <Setter Property="Foreground" Value="#6366F1" /></KeyFrame>
+                <KeyFrame Cue="66%">  <Setter Property="Foreground" Value="#9B5DE5" /></KeyFrame>
+                <KeyFrame Cue="100%"> <Setter Property="Foreground" Value="#43BAFF" /></KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- Acelasi tratament pentru titlurile h1 din paginile MainWindow ("Cum stam azi?", "Tichete" etc.).
+         Tinem aceeasi cromatica, dar mai subtila (mai lent, palida) ca sa nu concureze cu KPI-urile. -->
+    <Style Selector="TextBlock.h1">
+        <Style.Animations>
+            <Animation Duration="0:0:10" IterationCount="INFINITE" Easing="SineEaseInOut">
+                <KeyFrame Cue="0%">   <Setter Property="Foreground" Value="#F5F8FF" /></KeyFrame>
+                <KeyFrame Cue="33%">  <Setter Property="Foreground" Value="#9BC8FF" /></KeyFrame>
+                <KeyFrame Cue="66%">  <Setter Property="Foreground" Value="#C9A3FF" /></KeyFrame>
+                <KeyFrame Cue="100%"> <Setter Property="Foreground" Value="#F5F8FF" /></KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+</Styles>

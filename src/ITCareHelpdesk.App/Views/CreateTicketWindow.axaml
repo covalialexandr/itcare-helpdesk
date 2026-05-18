@@ -1,0 +1,184 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ITCareHelpdesk.App.ViewModels"
+        xmlns:models="using:ITCareHelpdesk.App.Models"
+        xmlns:controls="using:ITCareHelpdesk.App.Controls"
+        x:Class="ITCareHelpdesk.App.Views.CreateTicketWindow"
+        x:DataType="vm:CreateTicketViewModel"
+        Title="Tichet nou — ITCare"
+        Width="720" Height="780"
+        MinWidth="640" MinHeight="700"
+        WindowStartupLocation="CenterOwner"
+        SystemDecorations="None"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
+        ShowInTaskbar="False">
+
+    <Border CornerRadius="16"
+            Background="{DynamicResource BgDeep}"
+            BorderBrush="{DynamicResource GlassBorderActive}"   
+            BorderThickness="1"
+            BoxShadow="0 32 80 0 #CC000000">
+
+        <Grid RowDefinitions="Auto,*,Auto">
+
+            <!-- Header cu titlu + close. Drag-handle peste tot top-ul. -->
+            <Border Grid.Row="0" Padding="28,22,28,18"
+                    BorderBrush="{DynamicResource GlassBorder}"
+                    BorderThickness="0,0,0,1"
+                    PointerPressed="OnDragChromeAreaPressed">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="TICHET NOU" Classes="label" />
+                        <TextBlock Text="Adauga un tichet" Classes="h2" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="✕" Classes="ghost"
+                            Width="34" Height="34" Padding="0"
+                            VerticalAlignment="Top"
+                            Click="OnCancelClick" />
+                </Grid>
+            </Border>
+
+            <!-- Continut form -->
+            <ScrollViewer Grid.Row="1" Padding="28,20"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="18">
+
+                    <!-- Titlul tichetului — campul cel mai important; il facem singular si vizibil -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="TITLU" Classes="label" />
+                        <TextBox Text="{Binding Titlu, Mode=TwoWay}"
+                                 Watermark="Ex: Server ERP nu raspunde — useri blocati"
+                                 FontSize="15" />
+                        <TextBlock Text="Minim 6 caractere. Fii specific — un titlu bun economiseste 5 minute la triaj."
+                                   Classes="muted" />
+                    </StackPanel>
+
+                    <!-- Descriere -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="DESCRIERE" Classes="label" />
+                        <TextBox Text="{Binding Descriere, Mode=TwoWay}"
+                                 Watermark="Context, pasi de reproducere, ce ai incercat..."
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="120" />
+                    </StackPanel>
+
+                    <!-- Client + categorie -->
+                    <Grid ColumnDefinitions="*,14,*">
+                        <StackPanel Grid.Column="0" Spacing="6">
+                            <TextBlock Text="CLIENT" Classes="label" />
+                            <ComboBox ItemsSource="{Binding ClientOptions}"
+                                      SelectedItem="{Binding SelectedClient, Mode=TwoWay}"
+                                      HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate DataType="models:Client">
+                                        <TextBlock Text="{Binding NumeCompanie}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="6">
+                            <TextBlock Text="CATEGORIE" Classes="label" />
+                            <ComboBox ItemsSource="{Binding CategoryOptions}"
+                                      SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                                      HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate DataType="models:CategoryOption">
+                                        <TextBlock Text="{Binding Display}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Prioritate + tip -->
+                    <Grid ColumnDefinitions="*,14,*">
+                        <StackPanel Grid.Column="0" Spacing="6">
+                            <TextBlock Text="PRIORITATE" Classes="label" />
+                            <ComboBox ItemsSource="{Binding Priorities}"
+                                      SelectedItem="{Binding SelectedPriority, Mode=TwoWay}"
+                                      HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="6">
+                            <TextBlock Text="TIP" Classes="label" />
+                            <ComboBox ItemsSource="{Binding Types}"
+                                      SelectedItem="{Binding SelectedType, Mode=TwoWay}"
+                                      HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Mesaj eroare -->
+                    <Border Background="#1AFF3B5C"
+                            BorderBrush="{DynamicResource StatusCritical}"
+                            BorderThickness="0,0,0,1"
+                            Padding="14,10"
+                            CornerRadius="6"
+                            IsVisible="{Binding ErrorMessage, Converter={x:Static controls:Converters.StringNotEmpty}}">
+                        <TextBlock Text="{Binding ErrorMessage}"
+                                   Foreground="{DynamicResource StatusCritical}"
+                                   FontSize="12" />
+                    </Border>
+
+                    <!-- Notita despre tehnician asignat — momentan il lasam neasignat la creare -->
+                    <Border Background="{DynamicResource GlassFill}"
+                            BorderBrush="{DynamicResource GlassBorder}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="14,12">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="ATRIBUIRE TEHNICIAN" Classes="label" />
+                            <TextBlock Classes="body" FontSize="12" TextWrapping="Wrap"
+                                       Text="Tichetul se creeaza fara tehnician asignat — va fi preluat din coada de catre un L1/L2 disponibil. Asignarea manuala se face din pagina Tichete." />
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer cu actiuni -->
+            <Border Grid.Row="2" Padding="28,18"
+                    BorderBrush="{DynamicResource GlassBorder}"
+                    BorderThickness="0,1,0,0">
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                    <TextBlock Grid.Column="0" Classes="muted"
+                               Text="Tichetul intra automat in coada cu SLA dupa prioritatea aleasa."
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Classes="ghost" Content="Anuleaza"
+                            Padding="20,12" Click="OnCancelClick" />
+                    <Button Grid.Column="2" Classes="primary" Content="↳  Creeaza tichet"
+                            Command="{Binding SubmitCommand}"
+                            IsDefault="True"
+                            Margin="12,0,0,0"
+                            Padding="22,12"
+                            FontSize="14" />
+                </Grid>
+            </Border>
+
+            <!-- Busy overlay -->
+            <Border Grid.Row="0" Grid.RowSpan="3"
+                    Background="#CC06070D"
+                    CornerRadius="16"
+                    IsVisible="{Binding IsBusy}">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14">
+                    <Border Width="36" Height="36" CornerRadius="18"
+                            Background="{DynamicResource Accent}">
+                        <Border.Styles>
+                            <Style Selector="Border">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:1.2" IterationCount="INFINITE">
+                                        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.25" /></KeyFrame>
+                                        <KeyFrame Cue="50%"><Setter Property="Opacity" Value="1.0" /></KeyFrame>
+                                        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.25" /></KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
+                    </Border>
+                    <TextBlock Text="{Binding BusyMessage}" Classes="body" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

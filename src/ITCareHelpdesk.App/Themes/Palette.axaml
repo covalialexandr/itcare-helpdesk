@@ -1,0 +1,102 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Paleta este construita pe trei axe:
+        1. Backgrounds — gradient deep-space, NU negru pur (negrul pur arata ieftin pe ecrane OLED)
+        2. Surface — straturi de "sticla" cu opacitate diferita pentru ierarhie vizuala
+        3. Accent — cyan-ul ITCare #43BAFF cu variatii pentru hover/glow
+
+        Am evitat paleta clasica de "saas blue" pentru ca devine plictisitoare; mizam pe
+        contrastul intre cyan electric si negru-albastru profund care da senzatie de
+        "mission control" / NOC dashboard real.
+    -->
+
+    <!-- Background layers -->
+    <Color x:Key="BgVoidColor">#06070D</Color>
+    <Color x:Key="BgDeepColor">#0B0F1A</Color>
+    <Color x:Key="BgSurface1Color">#10141F</Color>
+    <Color x:Key="BgSurface2Color">#161B28</Color>
+    <Color x:Key="BgSurface3Color">#1E2434</Color>
+
+    <SolidColorBrush x:Key="BgVoid" Color="{StaticResource BgVoidColor}" />
+    <SolidColorBrush x:Key="BgDeep" Color="{StaticResource BgDeepColor}" />
+    <SolidColorBrush x:Key="BgSurface1" Color="{StaticResource BgSurface1Color}" />
+    <SolidColorBrush x:Key="BgSurface2" Color="{StaticResource BgSurface2Color}" />
+    <SolidColorBrush x:Key="BgSurface3" Color="{StaticResource BgSurface3Color}" />
+
+    <!-- Glassmorphism — folosim alpha mic pe alb ca sa pastram "feeling-ul" de sticla translucida -->
+    <SolidColorBrush x:Key="GlassFill"     Color="#FFFFFF" Opacity="0.04" />
+    <SolidColorBrush x:Key="GlassFillHover" Color="#FFFFFF" Opacity="0.07" />
+    <SolidColorBrush x:Key="GlassBorder"   Color="#FFFFFF" Opacity="0.08" />
+    <SolidColorBrush x:Key="GlassBorderActive" Color="#43BAFF" Opacity="0.55" />
+
+    <!-- Accent cyan ITCare -->
+    <Color x:Key="AccentColor">#43BAFF</Color>
+    <Color x:Key="AccentDimColor">#2D8FCC</Color>
+    <Color x:Key="AccentGlowColor">#80D8FF</Color>
+
+    <SolidColorBrush x:Key="Accent"     Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentDim"  Color="{StaticResource AccentDimColor}" />
+    <SolidColorBrush x:Key="AccentGlow" Color="{StaticResource AccentGlowColor}" />
+
+    <!-- Text — folosim 3 niveluri de opacitate ca sa avem ierarhie clara fara culori artificiale -->
+    <SolidColorBrush x:Key="TextPrimary"   Color="#F5F8FF" />
+    <SolidColorBrush x:Key="TextSecondary" Color="#A8B2C8" />
+    <SolidColorBrush x:Key="TextMuted"     Color="#6B7388" />
+    <SolidColorBrush x:Key="TextDim"       Color="#3F4658" />
+
+    <!-- Status colors — folosite pentru badges/priority pills -->
+    <SolidColorBrush x:Key="StatusCritical" Color="#FF3B5C" />
+    <SolidColorBrush x:Key="StatusHigh"     Color="#FF8A3D" />
+    <SolidColorBrush x:Key="StatusMedium"   Color="#FFB84D" />
+    <SolidColorBrush x:Key="StatusLow"      Color="#5BC0BE" />
+    <SolidColorBrush x:Key="StatusSuccess"  Color="#2DD4BF" />
+    <SolidColorBrush x:Key="StatusInfo"     Color="#43BAFF" />
+    <SolidColorBrush x:Key="StatusWarning"  Color="#FBBF24" />
+
+    <!-- Gradient pentru splash & hero areas - radial cyan pe negru-albastru -->
+    <RadialGradientBrush x:Key="BgRadialAccent"
+                         Center="50%,50%" RadiusX="80%" RadiusY="80%">
+        <GradientStop Color="#1A43BAFF" Offset="0" />
+        <GradientStop Color="#0006070D" Offset="0.7" />
+        <GradientStop Color="#06070D"   Offset="1" />
+    </RadialGradientBrush>
+
+    <!-- Gradient liniar pentru butoane primare — cyan to azure -->
+    <LinearGradientBrush x:Key="AccentGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Color="#43BAFF" Offset="0" />
+        <GradientStop Color="#2D8FCC" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- Gradient pentru sidebar — vertical, subtle pentru efectul de adancime -->
+    <LinearGradientBrush x:Key="SidebarGradient" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Color="#10141F" Offset="0" />
+        <GradientStop Color="#0B0F1A" Offset="1" />
+    </LinearGradientBrush>
+
+    <!-- Tipografie scales — folosim ratia perfect fifth (1.5) pentru ierarhie matematica -->
+    <x:Double x:Key="FontSizeMicro">10</x:Double>
+    <x:Double x:Key="FontSizeSmall">12</x:Double>
+    <x:Double x:Key="FontSizeBody">14</x:Double>
+    <x:Double x:Key="FontSizeBodyLarge">16</x:Double>
+    <x:Double x:Key="FontSizeH3">20</x:Double>
+    <x:Double x:Key="FontSizeH2">28</x:Double>
+    <x:Double x:Key="FontSizeH1">42</x:Double>
+    <x:Double x:Key="FontSizeDisplay">64</x:Double>
+
+    <!-- Inter este inregistrat global prin AppBuilder.WithInterFont() din Program.cs,
+         deci e accesibil ca family-name "Inter" fara URI complet (URI-ul resm: vechi din Avalonia 0.10
+         nu mai functioneaza in 11.x). Fallback-ul Segoe UI / Arial intra pe sistem-uri unde Inter
+         nu apuca sa se inregistreze, ca aplicatia sa nu cada cu glyphTypeface error. -->
+    <FontFamily x:Key="FontDisplay">Inter, Segoe UI, Arial, sans-serif</FontFamily>
+    <FontFamily x:Key="FontMono">Cascadia Mono, Consolas, Menlo, monospace</FontFamily>
+
+    <!-- Radius — folosim un singur "vocabular" de colturi: pill, lg, md, sm -->
+    <CornerRadius x:Key="RadiusPill">999</CornerRadius>
+    <CornerRadius x:Key="RadiusXL">24</CornerRadius>
+    <CornerRadius x:Key="RadiusLG">16</CornerRadius>
+    <CornerRadius x:Key="RadiusMD">10</CornerRadius>
+    <CornerRadius x:Key="RadiusSM">6</CornerRadius>
+
+</ResourceDictionary>

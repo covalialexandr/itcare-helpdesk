@@ -1,0 +1,311 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ITCareHelpdesk.App.ViewModels"
+             xmlns:models="using:ITCareHelpdesk.App.Models"
+             xmlns:controls="using:ITCareHelpdesk.App.Controls"
+             x:Class="ITCareHelpdesk.App.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,28,32,40" Spacing="24">
+
+            <!-- Header sectiune -->
+            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                <StackPanel Grid.Column="0" Spacing="6">
+                    <TextBlock Text="DASHBOARD OPERATIUNI" Classes="label" />
+                    <TextBlock Text="Cum stam azi?" Classes="h1" />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Classes="ghost"
+                        Content="↻  Reincarca"
+                        Command="{Binding LoadCommand}"
+                        VerticalAlignment="Center" />
+            </Grid>
+
+            <!-- KPI strip — 6 carduri pe orizontala -->
+            <UniformGrid Columns="6">
+                <Border Classes="card-glow" Margin="0,0,12,0">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="TICHETE DESCHISE" Classes="label" />
+                        <TextBlock Text="{Binding Kpi.TicheteDeschise}"
+                                   FontSize="38" FontWeight="Bold"
+                                   Foreground="{DynamicResource Accent}" />
+                        <TextBlock Text="active acum" Classes="muted" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card" Margin="0,0,12,0">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="INTARZIATE" Classes="label" />
+                        <TextBlock Text="{Binding Kpi.TicheteIntarziate}"
+                                   FontSize="38" FontWeight="Bold"
+                                   Foreground="{DynamicResource StatusCritical}" />
+                        <TextBlock Text="SLA depasit" Classes="muted" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card" Margin="0,0,12,0">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="REZOLVATE AZI" Classes="label" />
+                        <TextBlock Text="{Binding Kpi.TicheteRezolvateAzi}"
+                                   FontSize="38" FontWeight="Bold"
+                                   Foreground="{DynamicResource StatusSuccess}" />
+                        <TextBlock Text="livrate" Classes="muted" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card" Margin="0,0,12,0">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="CLIENTI ACTIVI" Classes="label" />
+                        <TextBlock Text="{Binding Kpi.ClientiActivi}"
+                                   FontSize="38" FontWeight="Bold" />
+                        <TextBlock Text="cu contract" Classes="muted" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card" Margin="0,0,12,0">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="SATISFACTIE" Classes="label" />
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="{Binding Kpi.SatisfactieMedia, StringFormat='{}{0:F1}'}"
+                                       FontSize="38" FontWeight="Bold" />
+                            <TextBlock Text="/5" FontSize="18"
+                                       Foreground="{DynamicResource TextMuted}"
+                                       VerticalAlignment="Bottom" Margin="0,0,0,6" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding Kpi.SatisfactieMedia, Converter={x:Static controls:Converters.RatingToStars}}"
+                                   Foreground="{DynamicResource Accent}" FontSize="13" />
+                    </StackPanel>
+                </Border>
+
+                <Border Classes="card">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="SLA COMPLIANCE" Classes="label" />
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="{Binding Kpi.SlaCompliancePercent}"
+                                       FontSize="38" FontWeight="Bold" />
+                            <TextBlock Text="%" FontSize="20" VerticalAlignment="Bottom" Margin="0,0,0,6" />
+                        </StackPanel>
+                        <Grid Height="6" Margin="0,4,0,0">
+                            <Rectangle Fill="{DynamicResource GlassBorder}" RadiusX="3" RadiusY="3" />
+                            <Rectangle Fill="{DynamicResource Accent}" RadiusX="3" RadiusY="3"
+                                       HorizontalAlignment="Left"
+                                       Width="{Binding Kpi.SlaCompliancePercent}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- ===== Charts row: DONUT (stanga) + SPARKLINE (centru) + TOP TEHNICIENI (dreapta) ===== -->
+            <Grid ColumnDefinitions="1.1*,24,1.6*,24,1.3*">
+
+                <!-- Donut: distributie pe status -->
+                <Border Grid.Column="0" Classes="card">
+                    <Grid RowDefinitions="Auto,*,Auto">
+                        <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,12">
+                            <TextBlock Text="DISTRIBUTIE STATUS" Classes="label" />
+                            <TextBlock Text="Inel" Classes="h3" />
+                        </StackPanel>
+
+                        <!-- Controlul nostru custom (Skia/StreamGeometry) — randeaza arcuri colorate. -->
+                        <controls:DonutChart Grid.Row="1"
+                                             Values="{Binding StatusDistribution}"
+                                             MinHeight="220"
+                                             Thickness="24" />
+
+                        <!-- Legenda compacta sub donut, cu culori care matchuiesc segmentele -->
+                        <ItemsControl Grid.Row="2" ItemsSource="{Binding StatusDistribution}" Margin="0,16,0,0">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:StatusBucket">
+                                    <Border Margin="0,0,8,6" Padding="8,4"
+                                            Background="{DynamicResource GlassFill}"
+                                            BorderBrush="{DynamicResource GlassBorder}"
+                                            BorderThickness="1"
+                                            CornerRadius="999">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                                                     Fill="{Binding Status, Converter={x:Static controls:Converters.StatusToBrush}}" />
+                                            <TextBlock Text="{Binding Status}" FontSize="10" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Count}" FontSize="10"
+                                                       Foreground="{DynamicResource TextMuted}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+
+                <!-- Sparkline: trend rezolvari ultimele 7 zile -->
+                <Border Grid.Column="2" Classes="card">
+                    <Grid RowDefinitions="Auto,*">
+                        <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,12">
+                            <TextBlock Text="TREND REZOLVARI 7 ZILE" Classes="label" />
+                            <TextBlock Text="Pulse-ul echipei" Classes="h3" />
+                        </StackPanel>
+
+                        <controls:SparklineChart Grid.Row="1"
+                                                 Values="{Binding DailyResolvedData}"
+                                                 MinHeight="240" />
+                    </Grid>
+                </Border>
+
+                <!-- Top tehnicieni -->
+                <Border Grid.Column="4" Classes="card">
+                    <Grid RowDefinitions="Auto,*">
+                        <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,16">
+                            <TextBlock Text="TOP TEHNICIENI" Classes="label" />
+                            <TextBlock Text="Echipa lunii" Classes="h3" />
+                        </StackPanel>
+
+                        <ItemsControl Grid.Row="1" ItemsSource="{Binding TopTehnicieni}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="10" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:Technician">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding LocClasament}"
+                                                   FontSize="28" FontWeight="Black"
+                                                   Foreground="{DynamicResource AccentDim}"
+                                                   Width="40" />
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <TextBlock Text="{Binding Nume}" FontWeight="SemiBold" FontSize="13" />
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="{Binding Nivel}" Classes="mono muted" FontSize="10" />
+                                                <TextBlock Text="·" Classes="muted" />
+                                                <TextBlock Text="{Binding Specializare}" Classes="muted" FontSize="10" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Spacing="2" HorizontalAlignment="Right">
+                                            <TextBlock Text="{Binding TicheteRezolvate}"
+                                                       FontSize="18" FontWeight="Bold"
+                                                       TextAlignment="Right" />
+                                            <TextBlock Text="rezolvate" Classes="muted" FontSize="10" TextAlignment="Right" />
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Atentie imediata: tichete critice (full-width) -->
+            <Border Classes="card">
+                <Grid RowDefinitions="Auto,*">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="ATENTIE IMEDIATA" Classes="label" />
+                            <TextBlock Text="Tichete critice" Classes="h3" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Classes="pill"
+                                Background="#1AFF3B5C"
+                                BorderBrush="{DynamicResource StatusCritical}"
+                                BorderThickness="1">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="●" Foreground="{DynamicResource StatusCritical}" FontSize="10" VerticalAlignment="Center" />
+                                <TextBlock Text="HOT" Classes="label" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding TicheteCritice}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="8" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="models:Ticket">
+                                <Border Padding="14,12"
+                                        CornerRadius="{DynamicResource RadiusMD}"
+                                        Background="{DynamicResource BgSurface2}"
+                                        BorderBrush="{DynamicResource GlassBorder}"
+                                        BorderThickness="1">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <Border Grid.Column="0" Width="8" Height="8" CornerRadius="4"
+                                                Background="{Binding Prioritate, Converter={x:Static controls:Converters.PriorityToBrush}}"
+                                                VerticalAlignment="Center" />
+                                        <StackPanel Grid.Column="1" Margin="14,0" Spacing="2">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{Binding NumarTichet}" Classes="mono muted" FontSize="10" />
+                                                <TextBlock Text="·" Classes="muted" />
+                                                <TextBlock Text="{Binding Client}" Classes="muted" FontSize="10" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding Titlu}" FontWeight="Medium" FontSize="13" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Spacing="2" HorizontalAlignment="Right">
+                                            <TextBlock Text="{Binding OreDeschis, StringFormat='{}{0}h'}"
+                                                       FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{Binding Prioritate, Converter={x:Static controls:Converters.PriorityToBrush}}"
+                                                       TextAlignment="Right" />
+                                            <TextBlock Text="{Binding Tehnician}" Classes="muted" FontSize="10" TextAlignment="Right" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+
+            <!-- Distributie pe categorii cu bare orizontale -->
+            <Border Classes="card">
+                <Grid RowDefinitions="Auto,*">
+                    <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,18">
+                        <TextBlock Text="DISTRIBUTIE PE CATEGORII" Classes="label" />
+                        <TextBlock Text="Cum se sparge volumul" Classes="h3" />
+                    </StackPanel>
+
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding CategoriiStats}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="14" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="models:CategoryStat">
+                                <Grid ColumnDefinitions="220,*,Auto">
+                                    <StackPanel Grid.Column="0" Spacing="2">
+                                        <TextBlock Text="{Binding Categorie}" FontWeight="SemiBold" FontSize="13" />
+                                        <TextBlock Text="{Binding Departament}" Classes="mono muted" FontSize="10" />
+                                    </StackPanel>
+
+                                    <Grid Grid.Column="1" Height="20" Margin="20,0,20,0" VerticalAlignment="Center">
+                                        <Rectangle Fill="{DynamicResource BgSurface3}" RadiusX="6" RadiusY="6" />
+                                        <Rectangle Fill="{DynamicResource AccentGradient}"
+                                                   RadiusX="6" RadiusY="6"
+                                                   HorizontalAlignment="Left"
+                                                   Width="{Binding ProcentRezolvate}" />
+                                    </Grid>
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding TotalTichete}" FontWeight="Bold" FontSize="14" TextAlignment="Right" />
+                                            <TextBlock Text="total" Classes="muted" TextAlignment="Right" />
+                                        </StackPanel>
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding ProcentRezolvate, StringFormat='{}{0:F0}%'}"
+                                                       FontWeight="Bold" FontSize="14" TextAlignment="Right"
+                                                       Foreground="{DynamicResource Accent}" />
+                                            <TextBlock Text="rezolvat" Classes="muted" TextAlignment="Right" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,88 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ITCareHelpdesk.App.ViewModels"
+             xmlns:models="using:ITCareHelpdesk.App.Models"
+             xmlns:controls="using:ITCareHelpdesk.App.Controls"
+             x:Class="ITCareHelpdesk.App.Views.ClientsView"
+             x:DataType="vm:ClientsViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="32,28,32,32">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="PORTOFOLIU" Classes="label" />
+                <TextBlock Text="Clienti" Classes="h1" />
+            </StackPanel>
+            <Button Grid.Column="1" Classes="ghost" Content="↻ Refresh" Command="{Binding LoadCommand}" VerticalAlignment="Center" />
+        </Grid>
+
+        <Border Grid.Row="1" Classes="card" Padding="16" Margin="0,0,0,16">
+            <TextBox Text="{Binding SearchText, Mode=TwoWay}"
+                     Watermark="Cauta dupa nume, oras sau industrie..." />
+        </Border>
+
+        <!-- Lista clienti — folosim WrapPanel cu carduri mai degraba decat lista plata.
+             Clientii sunt entitati "umane", merita vizualizare ca galerie. -->
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="models:Client">
+                        <Border Width="320" Height="160" Margin="0,0,16,16"
+                                Classes="card"
+                                Padding="20">
+                            <Grid RowDefinitions="Auto,*,Auto">
+                                <!-- Top: avatar text + ticker tichete -->
+                                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+                                    <!-- Avatar text — folosim initiala companiei prin convertor in loc de indexer in binding
+                                         (compiled bindings nu se inteleg intotdeauna bine cu indexer pe string) -->
+                                    <Border Grid.Column="0" Width="44" Height="44"
+                                            CornerRadius="10"
+                                            Background="{DynamicResource AccentGradient}">
+                                        <TextBlock Text="{Binding NumeCompanie, Converter={x:Static controls:Converters.FirstInitial}}"
+                                                   FontSize="20" FontWeight="Bold"
+                                                   Foreground="#06070D"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
+                                    <Border Grid.Column="2" Classes="pill"
+                                            Background="{DynamicResource GlassFill}"
+                                            BorderBrush="{DynamicResource GlassBorder}"
+                                            BorderThickness="1"
+                                            VerticalAlignment="Top">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="❖" FontSize="10" Foreground="{DynamicResource Accent}" />
+                                            <TextBlock Text="{Binding NrTichete}" FontSize="11" FontWeight="SemiBold" />
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <StackPanel Grid.Row="1" VerticalAlignment="Bottom" Spacing="2" Margin="0,10,0,0">
+                                    <TextBlock Text="{Binding NumeCompanie}" FontWeight="SemiBold" FontSize="15"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Industrie}" Classes="muted" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+
+                                <Grid Grid.Row="2" ColumnDefinitions="*,*" Margin="0,12,0,0">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="LOCATIE" Classes="label" FontSize="9" />
+                                        <TextBlock Text="{Binding Oras, FallbackValue='—'}" FontSize="12" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="CONTRACT" Classes="label" FontSize="9" />
+                                        <TextBlock Text="{Binding DataContract, StringFormat='{}{0:dd.MM.yyyy}'}"
+                                                   Classes="mono" FontSize="12" />
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

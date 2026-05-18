@@ -1,0 +1,102 @@
+# ============================================================
+# .NET build artifacts — niciodata pe repo, generate la fiecare build
+# ============================================================
+bin/
+obj/
+out/
+[Bb]uild/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Ll]og/
+[Ll]ogs/
+
+# Fisiere de project user / cache local
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.cache
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+node_modules/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ============================================================
+# Visual Studio
+# ============================================================
+.vs/
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.VC.opendb
+ipch/
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+
+# ============================================================
+# JetBrains Rider / ReSharper / IntelliJ — preferintele locale ale IDE-ului,
+# nu vrem sa-i incurcam pe alti developeri cu setarile noastre de tab/spatii.
+# ============================================================
+.idea/
+*.DotSettings.user
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# ============================================================
+# OS junk
+# ============================================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ============================================================
+# Loguri & crash dumps
+# ============================================================
+*.log
+itcare_crash.log
+*.tlog
+*.tmp
+*.bak
+*.swp
+
+# ============================================================
+# SECRETE / configuratii locale — daca pe viitor adaugam fisiere
+# cu API keys (Anthropic, EVE-NG credentials etc.), aceste nume sunt
+# rezervate pentru a nu fi commitate niciodata.
+# ============================================================
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+secrets.json
+*.env
+.env.local
+eve-credentials.json
+anthropic-key.txt
+
+# Permitem appsettings.json (cu connection string Trusted_Connection — nu e secret),
+# dar daca cineva schimba sa adauge parola, sa-l mute in appsettings.Local.json.

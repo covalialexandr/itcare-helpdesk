@@ -1,0 +1,132 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ITCareHelpdesk.App.ViewModels"
+             xmlns:controls="using:ITCareHelpdesk.App.Controls"
+             x:Class="ITCareHelpdesk.App.Views.ReportsView"
+             x:DataType="vm:ReportsViewModel">
+
+    <Grid Margin="32,28,32,32">
+        <StackPanel Spacing="24" MaxWidth="980" HorizontalAlignment="Stretch">
+
+            <StackPanel Spacing="6">
+                <TextBlock Text="STUDIO RAPOARTE" Classes="label" />
+                <TextBlock Text="Genereaza si exporta." Classes="h1" />
+                <TextBlock Text="Alege formatul si descarca rapoartele pentru sedinte, audit sau arhiva."
+                           Classes="body" TextWrapping="Wrap" MaxWidth="640" />
+            </StackPanel>
+
+            <!-- 3 carduri masive: PDF (highlight) + Word + Excel.
+                 PDF-ul are "card-glow" pentru ca e cel mai cerut format pentru sedinte/print. -->
+            <Grid ColumnDefinitions="*,20,*,20,*">
+
+                <!-- ===== PDF (primary highlight) ===== -->
+                <Border Grid.Column="0" Classes="card-glow" Padding="0">
+                    <Grid RowDefinitions="*,Auto" Height="340">
+                        <StackPanel Grid.Row="0" Spacing="14" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Border Width="120" Height="120" CornerRadius="60"
+                                    Background="{DynamicResource AccentGradient}"
+                                    HorizontalAlignment="Center">
+                                <TextBlock Text="P" FontSize="68" FontWeight="Black"
+                                           Foreground="#06070D"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Raport PDF" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            <TextBlock Text=".pdf · KPI + tabel cu prioritati colorate"
+                                       Classes="muted" HorizontalAlignment="Center" />
+                            <TextBlock Text="Recomandat pentru sedinte si arhiva."
+                                       Classes="muted" FontSize="10"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                        <Border Grid.Row="1" Padding="20"
+                                BorderBrush="{DynamicResource GlassBorder}"
+                                BorderThickness="0,1,0,0">
+                            <Button Classes="primary"
+                                    Content="↧ Genereaza .pdf"
+                                    Command="{Binding ExportPdfCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    Padding="20,14"
+                                    FontSize="14" />
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- ===== Word ===== -->
+                <Border Grid.Column="2" Classes="card" Padding="0">
+                    <Grid RowDefinitions="*,Auto" Height="340">
+                        <StackPanel Grid.Row="0" Spacing="14" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Border Width="120" Height="120" CornerRadius="60"
+                                    Background="{DynamicResource BgSurface3}"
+                                    BorderBrush="{DynamicResource Accent}"
+                                    BorderThickness="2"
+                                    HorizontalAlignment="Center">
+                                <TextBlock Text="W" FontSize="68" FontWeight="Black"
+                                           Foreground="{DynamicResource Accent}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Raport Word" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            <TextBlock Text=".docx · pentru meeting si imprimare"
+                                       Classes="muted" HorizontalAlignment="Center" />
+                        </StackPanel>
+                        <Border Grid.Row="1" Padding="20"
+                                BorderBrush="{DynamicResource GlassBorder}"
+                                BorderThickness="0,1,0,0">
+                            <Button Content="↧ Genereaza .docx"
+                                    Command="{Binding ExportWordCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    Padding="20,14"
+                                    FontSize="14" />
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- ===== Excel ===== -->
+                <Border Grid.Column="4" Classes="card" Padding="0">
+                    <Grid RowDefinitions="*,Auto" Height="340">
+                        <StackPanel Grid.Row="0" Spacing="14" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Border Width="120" Height="120" CornerRadius="60"
+                                    Background="{DynamicResource BgSurface3}"
+                                    BorderBrush="{DynamicResource Accent}"
+                                    BorderThickness="2"
+                                    HorizontalAlignment="Center">
+                                <TextBlock Text="X" FontSize="68" FontWeight="Black"
+                                           Foreground="{DynamicResource Accent}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Raport Excel" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            <TextBlock Text=".xlsx · pentru analiza si pivot tables"
+                                       Classes="muted" HorizontalAlignment="Center" />
+                        </StackPanel>
+                        <Border Grid.Row="1" Padding="20"
+                                BorderBrush="{DynamicResource GlassBorder}"
+                                BorderThickness="0,1,0,0">
+                            <Button Content="↧ Genereaza .xlsx"
+                                    Command="{Binding ExportExcelCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    Padding="20,14"
+                                    FontSize="14" />
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Ultimul export: arata calea fisierului pentru open-in-folder reflex -->
+            <Border Classes="card"
+                    IsVisible="{Binding LastExportPath, Converter={x:Static controls:Converters.StringNotEmpty}}">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="ULTIMUL EXPORT" Classes="label" />
+                    <TextBlock Text="{Binding LastExportPath}"
+                               Classes="mono"
+                               FontSize="12"
+                               Foreground="{DynamicResource Accent}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <!-- Tip: in viitor putem adauga un dropdown "perioada" + filtre custom.
+                 Schelet-ul este pus, extensia va fi rapida. -->
+        </StackPanel>
+    </Grid>
+</UserControl>

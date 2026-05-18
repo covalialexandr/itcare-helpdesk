@@ -1,0 +1,27 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:ITCareHelpdesk.App"
+             x:Class="ITCareHelpdesk.App.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Styles>
+        <!-- Fluent rămâne baseline-ul; suprascriem ulterior cu temele proprii pentru
+             ca multe controale (Window, ScrollViewer) folosesc resources de la Fluent. -->
+        <FluentTheme />
+
+        <!-- Ordinea conteaza: stilurile proprii vin DUPA Fluent ca sa-l poata suprascrie. -->
+        <StyleInclude Source="avares://ITCareHelpdesk/Themes/DarkTheme.axaml" />
+        <StyleInclude Source="avares://ITCareHelpdesk/Themes/Controls.axaml" />
+    </Application.Styles>
+
+    <Application.Resources>
+        <!-- Application.Resources este tipat IResourceDictionary in Avalonia 11, deci
+             ResourceInclude trebuie pus prin MergedDictionaries pe un ResourceDictionary wrapper.
+             Forma "scurta" cu ResourceInclude direct functiona in 0.10.x dar a fost taiata in 11.x. -->
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://ITCareHelpdesk/Themes/Palette.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

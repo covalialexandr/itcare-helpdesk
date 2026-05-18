@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!-- net8 ramane LTS si are tooling stabil in Rider; net9 e ok dar mai prone la breaking changes pe pachete third-party -->
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <RootNamespace>ITCareHelpdesk.App</RootNamespace>
+        <AssemblyName>ITCareHelpdesk</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Avalonia core; tinem versiunile aliniate ca sa evitam conflicte de runtime intre pachetele Avalonia.* -->
+        <PackageReference Include="Avalonia" Version="11.2.3" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.2.3" />
+        <!-- Diagnostics doar pentru debug; in release ar incarca degeaba memorie si ar expune internalurile UI -->
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.2.3" />
+
+        <!-- SVG support pentru logo-ITcare.svg fara sa-l convertim la PNG -->
+        <PackageReference Include="Avalonia.Svg.Skia" Version="11.2.0.2" />
+
+        <!-- MVVM toolkit cu source generators - elimina boilerplate-ul de la INotifyPropertyChanged -->
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+
+        <!-- ADO.NET cu suport modern; Microsoft.Data.SqlClient este versiunea oficiala mentinuta, NU System.Data.SqlClient (legacy) -->
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
+
+        <!-- SkiaSharp explicit pentru ca desenam custom charts direct pe GPU canvas -->
+        <PackageReference Include="SkiaSharp" Version="3.116.1" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.116.1" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
+
+        <!-- Export rapoarte: OpenXml pentru Word, ClosedXML pentru Excel cu API mai prietenos -->
+        <PackageReference Include="DocumentFormat.OpenXml" Version="3.2.0" />
+        <PackageReference Include="ClosedXML" Version="0.104.2" />
+
+        <!-- QuestPDF: fluent API pentru rapoarte PDF. Comunitatea il dezvolta sustinut,
+             licenta MIT/Community pentru organizatii sub $1M revenue, perfect pentru proiect de practica. -->
+        <PackageReference Include="QuestPDF" Version="2024.10.3" />
+
+        <!-- Configurare prin appsettings.json - mai curat decat hardcoding-ul de connection strings -->
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+</Project>

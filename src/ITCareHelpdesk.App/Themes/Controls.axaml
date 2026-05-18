@@ -1,0 +1,224 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ============================================================
+         BUTTON — primar, secundar, ghost, danger
+         Folosim transform pe Translate pentru "press" feeling
+         (mai natural decat scale care arata robotic).
+         ============================================================ -->
+
+    <Style Selector="Button">
+        <Setter Property="FontFamily" Value="{DynamicResource FontDisplay}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+        <Setter Property="Padding" Value="20,12" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMD}" />
+        <Setter Property="Background" Value="{DynamicResource GlassFill}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource GlassBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.18" />
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" Easing="QuadraticEaseOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="Button:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource GlassFillHover}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource GlassBorderActive}" />
+    </Style>
+
+    <Style Selector="Button:pressed">
+        <Setter Property="RenderTransform" Value="translateY(1px)" />
+    </Style>
+
+    <!-- Primary - butonul "call to action"; folosim gradient cyan ITCare -->
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="{DynamicResource AccentGradient}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="Foreground" Value="#06070D" />
+    </Style>
+
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Accent}" />
+    </Style>
+
+    <!-- Ghost - butoane secundare, transparente pana la hover -->
+    <Style Selector="Button.ghost">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+
+    <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource GlassFill}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource GlassBorder}" />
+    </Style>
+
+    <Style Selector="Button.danger">
+        <Setter Property="Foreground" Value="{DynamicResource StatusCritical}" />
+        <Setter Property="BorderBrush" Value="#FF3B5C40" />
+    </Style>
+
+    <!-- ============================================================
+         TEXTBOX — input modern, no border-box clasica;
+         linie subtila la baza care se aprinde pe focus
+         ============================================================ -->
+
+    <Style Selector="TextBox">
+        <Setter Property="FontFamily" Value="{DynamicResource FontDisplay}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="Background" Value="{DynamicResource GlassFill}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource GlassBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMD}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
+                <BrushTransition Property="Background" Duration="0:0:0.18" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <Setter Property="Background" Value="{DynamicResource BgSurface2}" />
+    </Style>
+
+    <Style Selector="TextBox.error /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource StatusCritical}" />
+    </Style>
+
+    <!-- Sub-stil pentru OTP digits boxes — fonturi mari, centrat -->
+    <Style Selector="TextBox.otp">
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Width" Value="56" />
+        <Setter Property="Height" Value="64" />
+        <Setter Property="MaxLength" Value="1" />
+        <Setter Property="TextAlignment" Value="Center" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <!-- ============================================================
+         CARD — glassmorphism panel folosit peste tot
+         ============================================================ -->
+
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{DynamicResource BgSurface1}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource GlassBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusLG}" />
+        <Setter Property="Padding" Value="24" />
+        <Setter Property="BoxShadow" Value="0 24 64 0 #66000000" />
+    </Style>
+
+    <Style Selector="Border.card-glow">
+        <Setter Property="Background" Value="{DynamicResource BgSurface1}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource GlassBorderActive}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusLG}" />
+        <Setter Property="Padding" Value="24" />
+        <Setter Property="BoxShadow" Value="0 0 48 0 #4043BAFF, 0 24 64 0 #66000000" />
+    </Style>
+
+    <Style Selector="Border.pill">
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusPill}" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- ============================================================
+         LISTBOX & ITEMS — sidebar nav, lista tichete etc.
+         ============================================================ -->
+
+    <Style Selector="ListBox">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="Margin" Value="6,2" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMD}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.18" />
+                <BrushTransition Property="Foreground" Duration="0:0:0.18" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource GlassFill}" />
+    </Style>
+
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="#1543BAFF" />
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Accent}" />
+    </Style>
+
+    <!-- Variant "flat-rows": liste-tabel cu randuri intinse pe toata latimea, fara margin/radius;
+         folosit in TicketsView, AssetsView (datagrid look fara DataGrid). -->
+    <Style Selector="ListBox.flat-rows > ListBoxItem">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+
+    <Style Selector="ListBox.flat-rows > ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="#0A43BAFF" />
+    </Style>
+
+    <!-- DataGrid styling - flat & dark, fara grid lines verzi ca-n SSMS -->
+    <Style Selector="DataGrid">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="GridLinesVisibility" Value="Horizontal" />
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource GlassBorder}" />
+        <Setter Property="RowBackground" Value="Transparent" />
+        <Setter Property="HeadersVisibility" Value="Column" />
+        <Setter Property="ColumnHeaderHeight" Value="44" />
+        <Setter Property="RowHeight" Value="48" />
+    </Style>
+
+    <Style Selector="DataGridColumnHeader">
+        <Setter Property="Background" Value="{DynamicResource BgSurface2}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Padding" Value="16,0" />
+    </Style>
+
+    <Style Selector="DataGridCell">
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+    </Style>
+
+    <Style Selector="DataGridRow:pointerover">
+        <Setter Property="Background" Value="{DynamicResource GlassFill}" />
+    </Style>
+
+    <!-- ComboBox -->
+    <Style Selector="ComboBox">
+        <Setter Property="Background" Value="{DynamicResource GlassFill}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource GlassBorder}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource RadiusMD}" />
+        <Setter Property="Padding" Value="14,8" />
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="MinHeight" Value="44" />
+    </Style>
+
+</Styles>

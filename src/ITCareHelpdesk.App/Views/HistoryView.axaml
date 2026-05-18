@@ -1,0 +1,113 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ITCareHelpdesk.App.ViewModels"
+             xmlns:models="using:ITCareHelpdesk.App.Models"
+             xmlns:controls="using:ITCareHelpdesk.App.Controls"
+             x:Class="ITCareHelpdesk.App.Views.HistoryView"
+             x:DataType="vm:HistoryViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="32,28,32,32">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="ACTIVITATE" Classes="label" />
+                <TextBlock Text="Istoric" Classes="h1" />
+            </StackPanel>
+            <Button Grid.Column="1" Classes="ghost" Content="↻ Refresh" Command="{Binding LoadCommand}" VerticalAlignment="Center" />
+        </Grid>
+
+        <!-- Bara cu interval — segmented control "manual": 3 butoane care arata pill-uri.
+             Aleg asta in loc de combo-box pentru ca optiunile sunt putine si predictibile. -->
+        <Border Grid.Row="1" Classes="card" Padding="14" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="ULTIMELE" Classes="label" VerticalAlignment="Center" />
+                <Button Content="7 zile" Classes="ghost" Padding="14,8"
+                        Command="{Binding LoadCommand}"
+                        Click="OnDaysClick" Tag="7" />
+                <Button Content="14 zile" Classes="ghost" Padding="14,8"
+                        Command="{Binding LoadCommand}"
+                        Click="OnDaysClick" Tag="14" />
+                <Button Content="30 zile" Classes="ghost" Padding="14,8"
+                        Command="{Binding LoadCommand}"
+                        Click="OnDaysClick" Tag="30" />
+                <Border Width="1" Background="{DynamicResource GlassBorder}" Margin="6,4" />
+                <TextBlock Text="{Binding DaysBack, StringFormat='afisez ultimele {0} zile'}"
+                           Classes="mono muted" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- Timeline: o linie verticala cu puncte pentru fiecare entry — vizualizare cronologica
+             "natural reading order" in loc de DataGrid sec. -->
+        <ScrollViewer Grid.Row="2">
+            <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="0" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="models:HistoryEntry">
+                        <Grid ColumnDefinitions="120,40,*" Margin="0,2">
+                            <!-- Coloana 0: timestamp -->
+                            <StackPanel Grid.Column="0" VerticalAlignment="Top" Margin="0,16,12,0">
+                                <TextBlock Text="{Binding DataActivitate}"
+                                           Classes="mono"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           TextAlignment="Right" />
+                            </StackPanel>
+
+                            <!-- Coloana 1: linia verticala + punctul -->
+                            <Grid Grid.Column="1">
+                                <Border Width="1" Background="{DynamicResource GlassBorder}" HorizontalAlignment="Center" />
+                                <Ellipse Width="10" Height="10"
+                                         Fill="{DynamicResource Accent}"
+                                         Stroke="{DynamicResource BgVoid}"
+                                         StrokeThickness="2"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Top"
+                                         Margin="0,18,0,0" />
+                            </Grid>
+
+                            <!-- Coloana 2: cardul -->
+                            <Border Grid.Column="2"
+                                    Classes="card"
+                                    Margin="14,8,0,8"
+                                    Padding="18,14">
+                                <StackPanel Spacing="6">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
+                                            <Border Classes="pill" Background="{DynamicResource GlassFill}"
+                                                    BorderBrush="{DynamicResource GlassBorder}"
+                                                    BorderThickness="1">
+                                                <TextBlock Text="{Binding TipActivitate}" FontSize="10" FontWeight="SemiBold" />
+                                            </Border>
+                                            <TextBlock Text="{Binding NumarTichet}" Classes="mono"
+                                                       Foreground="{DynamicResource Accent}" FontSize="12" VerticalAlignment="Center" />
+                                            <TextBlock Text="·" Classes="muted" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Client}" Classes="muted" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding EfectuatDe}"
+                                                   Classes="mono muted" FontSize="11" VerticalAlignment="Center" />
+                                    </Grid>
+
+                                    <TextBlock Text="{Binding Mesaj}" FontSize="13" TextWrapping="Wrap" />
+
+                                    <StackPanel Orientation="Horizontal" Spacing="14" Margin="0,4,0,0"
+                                                IsVisible="{Binding StatusNou, Converter={x:Static controls:Converters.StringNotEmpty}}">
+                                        <TextBlock Text="{Binding StatusVechi}" FontSize="11"
+                                                   Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" />
+                                        <TextBlock Text="→" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding StatusNou}" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="{Binding StatusNou, Converter={x:Static controls:Converters.StatusToBrush}}"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

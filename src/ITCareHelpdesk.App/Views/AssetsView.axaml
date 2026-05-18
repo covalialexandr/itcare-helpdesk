@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ITCareHelpdesk.App.ViewModels"
+             xmlns:models="using:ITCareHelpdesk.App.Models"
+             xmlns:controls="using:ITCareHelpdesk.App.Controls"
+             x:Class="ITCareHelpdesk.App.Views.AssetsView"
+             x:DataType="vm:AssetsViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="32,28,32,32">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,18">
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="INVENTAR" Classes="label" />
+                <TextBlock Text="Asset-uri" Classes="h1" />
+            </StackPanel>
+            <Button Grid.Column="1" Classes="ghost" Content="↻ Refresh" Command="{Binding LoadCommand}" VerticalAlignment="Center" />
+        </Grid>
+
+        <Border Grid.Row="1" Classes="card" Padding="16" Margin="0,0,0,16">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBox Grid.Column="0" Text="{Binding SearchText, Mode=TwoWay}"
+                         Watermark="Cauta dupa cod, denumire, producator..." MaxWidth="420" HorizontalAlignment="Left" />
+                <ComboBox Grid.Column="1" Margin="12,0,0,0"
+                          ItemsSource="{Binding Types}"
+                          SelectedItem="{Binding SelectedType, Mode=TwoWay}"
+                          MinWidth="180" />
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="2" Classes="card" Padding="0">
+            <Grid RowDefinitions="Auto,*">
+                <Border Grid.Row="0"
+                        Background="{DynamicResource BgSurface2}"
+                        BorderBrush="{DynamicResource GlassBorder}"
+                        BorderThickness="0,0,0,1"
+                        Padding="20,12">
+                    <Grid ColumnDefinitions="120,2*,1.2*,Auto,1.5*,Auto,Auto">
+                        <TextBlock Grid.Column="0" Text="COD" Classes="label" />
+                        <TextBlock Grid.Column="1" Text="DENUMIRE" Classes="label" Margin="14,0,0,0" />
+                        <TextBlock Grid.Column="2" Text="TIP" Classes="label" />
+                        <TextBlock Grid.Column="3" Text="PRODUCATOR" Classes="label" Margin="12,0" />
+                        <TextBlock Grid.Column="4" Text="CLIENT" Classes="label" Margin="12,0" />
+                        <TextBlock Grid.Column="5" Text="STATUS" Classes="label" Margin="12,0" />
+                        <TextBlock Grid.Column="6" Text="GARANTIE" Classes="label" Margin="12,0" />
+                    </Grid>
+                </Border>
+
+                <ListBox Grid.Row="1"
+                         Classes="flat-rows"
+                         ItemsSource="{Binding Items}"
+                         SelectedItem="{Binding Selected, Mode=TwoWay}"
+                         Background="Transparent">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="models:Asset">
+                            <Border BorderBrush="{DynamicResource GlassBorder}"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="20,14">
+                                <Grid ColumnDefinitions="120,2*,1.2*,Auto,1.5*,Auto,Auto">
+                                    <TextBlock Grid.Column="0" Text="{Binding CodAsset}"
+                                               Classes="mono" Foreground="{DynamicResource Accent}"
+                                               FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Denumire}"
+                                               Margin="14,0,0,0" FontWeight="Medium"
+                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Tip}"
+                                               Foreground="{DynamicResource TextSecondary}" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="3" Text="{Binding Producator, FallbackValue='—'}"
+                                               Margin="12,0" FontSize="12" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="4" Text="{Binding Client}"
+                                               Margin="12,0" FontSize="12" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <Border Grid.Column="5" Classes="pill" Margin="12,0"
+                                            Padding="10,3"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent"
+                                            BorderBrush="{Binding Status, Converter={x:Static controls:Converters.StatusToBrush}}"
+                                            BorderThickness="1">
+                                        <TextBlock Text="{Binding Status}" FontSize="10"
+                                                   Foreground="{Binding Status, Converter={x:Static controls:Converters.StatusToBrush}}" />
+                                    </Border>
+                                    <TextBlock Grid.Column="6"
+                                               Text="{Binding GarantiePana, StringFormat='{}{0:dd.MM.yyyy}', FallbackValue='—'}"
+                                               Margin="12,0" FontSize="11"
+                                               Classes="mono" Foreground="{DynamicResource TextMuted}"
+                                               VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

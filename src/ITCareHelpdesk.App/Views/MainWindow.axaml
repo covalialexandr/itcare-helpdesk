@@ -1,0 +1,238 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ITCareHelpdesk.App.ViewModels"
+        xmlns:svg="using:Avalonia.Svg.Skia"
+        xmlns:services="using:ITCareHelpdesk.App.Services"
+        xmlns:controls="using:ITCareHelpdesk.App.Controls"
+        xmlns:views="using:ITCareHelpdesk.App.Views"
+        x:Class="ITCareHelpdesk.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="ITCare Helpdesk"
+        Width="1480" Height="900"
+        MinWidth="1200" MinHeight="720"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent">
+
+    <!-- DataTemplate-urile sunt expuse prin Window.DataTemplates (nu Resources), ca Avalonia
+         sa le foloseasca automat pentru rezolvarea vizualului dintr-un ViewModel; e mecanismul
+         standard pentru "View-first navigation by ViewModel type". -->
+    <Window.DataTemplates>
+        <DataTemplate DataType="vm:DashboardViewModel"><views:DashboardView /></DataTemplate>
+        <DataTemplate DataType="vm:TicketsViewModel"><views:TicketsView /></DataTemplate>
+        <DataTemplate DataType="vm:ClientsViewModel"><views:ClientsView /></DataTemplate>
+        <DataTemplate DataType="vm:TechniciansViewModel"><views:TechniciansView /></DataTemplate>
+        <DataTemplate DataType="vm:AssetsViewModel"><views:AssetsView /></DataTemplate>
+        <DataTemplate DataType="vm:ReportsViewModel"><views:ReportsView /></DataTemplate>
+        <DataTemplate DataType="vm:HistoryViewModel"><views:HistoryView /></DataTemplate>
+    </Window.DataTemplates>
+
+    <Border CornerRadius="14"
+            Background="{DynamicResource BgVoid}"
+            BorderBrush="{DynamicResource GlassBorder}"
+            BorderThickness="1">
+
+        <Grid ColumnDefinitions="240,*">
+
+            <!-- ============================================================
+                 SIDEBAR — coloana stanga cu logo, nav-items si user-pill.
+                 Folosim gradient vertical subtle ca sa nu pluteasca "plat" peste
+                 fundalul ferestrei. Spacing-ul intre items este 4px nu 8 — sa fie
+                 dense, "control room", nu lejer ca un marketing site.
+                 ============================================================ -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource SidebarGradient}"
+                    BorderBrush="{DynamicResource GlassBorder}"
+                    BorderThickness="0,0,1,0"
+                    CornerRadius="14,0,0,14">
+                <Grid RowDefinitions="Auto,*,Auto">
+
+                    <!-- Header sidebar: logo + drag zone -->
+                    <Border Grid.Row="0" Height="80" PointerPressed="OnDragChromeAreaPressed">
+                        <Viewbox Width="140" Height="44"
+                                 HorizontalAlignment="Left" Margin="20,0,0,0">
+                            <svg:Svg Path="/Assets/logo-itcare.svg" />
+                        </Viewbox>
+                    </Border>
+
+                    <!-- Nav items — folosim ListBox cu SelectionMode=Single
+                         si bind pe SelectedItem pentru navigare. Selectia activa
+                         se arata cu o bara verticala accent in left edge — control
+                         vizual subtil mostenit din Visual Studio Code. -->
+                    <ListBox Grid.Row="1"
+                             Name="NavListBox"
+                             ItemsSource="{Binding NavItems}"
+                             SelectionMode="Single"
+                             SelectionChanged="OnNavSelectionChanged"
+                             Margin="8,16,8,8">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="vm:NavItem">
+                                <Grid ColumnDefinitions="Auto,Auto,*" Margin="0,2">
+                                    <!-- Bara accent verticala — culoare vine din state-ul listboxitem-ului via style -->
+                                    <Border Grid.Column="0"
+                                            Width="3" Height="22"
+                                            CornerRadius="2"
+                                            Background="Transparent"
+                                            Classes="nav-indicator" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Glyph}"
+                                               FontSize="16"
+                                               Margin="14,0,12,0"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding Title}"
+                                               VerticalAlignment="Center"
+                                               FontSize="13"
+                                               FontWeight="Medium" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Footer sidebar: user pill — avatar generat din initiale -->
+                    <Border Grid.Row="2"
+                            Margin="14,12,14,18"
+                            Padding="12,10"
+                            CornerRadius="{StaticResource RadiusMD}"
+                            Background="{DynamicResource GlassFill}"
+                            BorderBrush="{DynamicResource GlassBorder}"
+                            BorderThickness="1">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <!-- Avatar circular generic — initialele venind din numele complet -->
+                            <Border Grid.Column="0" Width="36" Height="36"
+                                    CornerRadius="18"
+                                    Background="{DynamicResource AccentGradient}">
+                                <TextBlock Text="{Binding Session.CurrentUser.NumeComplet, FallbackValue='A·O', TargetNullValue='?'}"
+                                           Foreground="#06070D"
+                                           FontWeight="Bold"
+                                           FontSize="13"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Session.CurrentUser.NumeComplet, FallbackValue='Utilizator'}"
+                                           FontSize="12" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding Session.CurrentUser.Role, FallbackValue='—'}"
+                                           Classes="mono muted" FontSize="10" />
+                            </StackPanel>
+                            <Button Grid.Column="2"
+                                    Content="⎋"
+                                    Classes="ghost"
+                                    Width="28" Height="28" Padding="0"
+                                    ToolTip.Tip="Iesire"
+                                    Command="{Binding SignOutCommand}"
+                                    Click="OnSignOutClick" />
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- ============================================================
+                 PARTEA DREAPTA — top bar + content host + toast stack.
+                 ============================================================ -->
+            <Grid Grid.Column="1" RowDefinitions="64,*">
+
+                <!-- Top bar custom: drag zone, search, window controls -->
+                <Border Grid.Row="0"
+                        Background="{DynamicResource BgDeep}"
+                        BorderBrush="{DynamicResource GlassBorder}"
+                        BorderThickness="0,0,0,1"
+                        PointerPressed="OnDragChromeAreaPressed">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <!-- Search bar — "command palette" style, half-width, centrat in coloana stanga -->
+                        <Border Grid.Column="0"
+                                Margin="24,12"
+                                MaxWidth="520"
+                                HorizontalAlignment="Left"
+                                Background="{DynamicResource GlassFill}"
+                                BorderBrush="{DynamicResource GlassBorder}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource RadiusMD}"
+                                Padding="14,8">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <TextBlock Grid.Column="0" Text="🔎" FontSize="14" Opacity="0.6" VerticalAlignment="Center" />
+                                <TextBox Grid.Column="1"
+                                         Text="{Binding SearchQuery, Mode=TwoWay}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         Watermark="Cauta tichet, client sau asset..."
+                                         FontSize="13"
+                                         Padding="10,2"
+                                         VerticalContentAlignment="Center" />
+                                <Border Grid.Column="2"
+                                        Background="{DynamicResource GlassFill}"
+                                        CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                    <TextBlock Text="Ctrl K" Classes="mono muted" FontSize="10" />
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- Window chrome custom -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Margin="0,16,16,0">
+                            <Button Content="—" Classes="ghost" Width="32" Height="32" Padding="0" Click="OnMinimizeClick" />
+                            <Button Content="◻" Classes="ghost" Width="32" Height="32" Padding="0" FontSize="12" Click="OnMaximizeClick" />
+                            <Button Content="✕" Classes="ghost" Width="32" Height="32" Padding="0" Click="OnCloseClick" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Content host: vizualul curent vine din NavigationService.CurrentView -->
+                <Grid Grid.Row="1">
+                    <TransitioningContentControl Content="{Binding Nav.CurrentView}">
+                        <TransitioningContentControl.PageTransition>
+                            <!-- 180ms cross-fade — destul cat sa se simta tranzitia, putin cat sa nu enerveze -->
+                            <CrossFade Duration="0:0:0.18" />
+                        </TransitioningContentControl.PageTransition>
+                    </TransitioningContentControl>
+
+                    <!-- Toast stack — coltul drept jos, peste continut -->
+                    <ItemsControl ItemsSource="{Binding Toasts.Toasts}"
+                                  HorizontalAlignment="Right"
+                                  VerticalAlignment="Bottom"
+                                  Margin="0,0,24,24"
+                                  MaxWidth="380">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="10" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="services:Toast">
+                                <Border CornerRadius="{StaticResource RadiusMD}"
+                                        Padding="16,12"
+                                        Background="{DynamicResource BgSurface2}"
+                                        BorderBrush="{DynamicResource GlassBorderActive}"
+                                        BorderThickness="1"
+                                        BoxShadow="0 12 32 0 #80000000"
+                                        IsVisible="{Binding IsVisible}"
+                                        MaxWidth="380">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13" />
+                                        <TextBlock Text="{Binding Message}"
+                                                   Foreground="{DynamicResource TextSecondary}"
+                                                   FontSize="12"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+
+    <!-- Styles locale ferestrei pentru bara verticala accent pe nav-item selectat.
+         In Avalonia selectorul "ListBoxItem:selected Border.nav-indicator" targeteaza
+         descendentii Border.nav-indicator din ItemTemplate, fara a intra prin /template/ -->
+    <Window.Styles>
+        <Style Selector="ListBoxItem:selected Border.nav-indicator">
+            <Setter Property="Background" Value="{DynamicResource Accent}" />
+        </Style>
+        <Style Selector="ListBoxItem:selected TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+        </Style>
+    </Window.Styles>
+</Window>

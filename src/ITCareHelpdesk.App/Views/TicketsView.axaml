@@ -1,0 +1,175 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ITCareHelpdesk.App.ViewModels"
+             xmlns:models="using:ITCareHelpdesk.App.Models"
+             xmlns:controls="using:ITCareHelpdesk.App.Controls"
+             x:Class="ITCareHelpdesk.App.Views.TicketsView"
+             x:DataType="vm:TicketsViewModel">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="32,28,32,32">
+
+        <!-- Header — titlu + KPI inline. Punem totalul + intarziate ca metrici "respiratoare"
+             langa titlu, fara card separat. Densitate informationala fara aglomerare. -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,18">
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="OPERATIUNI ACTIVE" Classes="label" />
+                <TextBlock Text="Tichete" Classes="h1" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="32" VerticalAlignment="Bottom" Margin="40,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="{Binding TotalCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Accent}" />
+                    <TextBlock Text="afisate" Classes="muted" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{Binding OverdueCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource StatusCritical}" />
+                    <TextBlock Text="intarziate SLA" Classes="muted" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Button Classes="ghost" Content="↻ Refresh" Command="{Binding LoadCommand}" />
+                <!-- Buton primary (gradient cyan) — actiunea principala a paginii, vizibila imediat -->
+                <Button Classes="primary"
+                        Content="+  Tichet nou"
+                        Click="OnCreateTicketClick"
+                        Padding="18,10"
+                        FontSize="13" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Toolbar filtre — pune controalele intr-un card cu padding mic; pastreaza "respiratie" -->
+        <Border Grid.Row="1" Classes="card" Padding="16" Margin="0,0,0,16">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto" VerticalAlignment="Center">
+                <TextBox Grid.Column="0"
+                         Text="{Binding SearchText, Mode=TwoWay}"
+                         Watermark="Cauta dupa numar, titlu sau client..."
+                         MaxWidth="380"
+                         HorizontalAlignment="Left" />
+
+                <ComboBox Grid.Column="1" Margin="12,0,0,0"
+                          ItemsSource="{Binding Priorities}"
+                          SelectedItem="{Binding SelectedPriority, Mode=TwoWay}"
+                          MinWidth="140" />
+
+                <ComboBox Grid.Column="2" Margin="12,0,0,0"
+                          ItemsSource="{Binding Statuses}"
+                          SelectedItem="{Binding SelectedStatus, Mode=TwoWay}"
+                          MinWidth="140" />
+
+                <CheckBox Grid.Column="3" Margin="16,0,0,0"
+                          IsChecked="{Binding ShowOnlyMine, Mode=TwoWay}"
+                          Content="Doar ale mele"
+                          Foreground="{DynamicResource TextSecondary}" />
+            </Grid>
+        </Border>
+
+        <!-- Lista tichete — folosim ListBox + DataTemplate in loc de DataGrid.
+             DataGrid se simte "Excel-y" si nu prinde personalitatea pe care vrem sa o dam aplicatiei.
+             Lista cu carduri-rand este mult mai friendly + scanabila. -->
+        <Border Grid.Row="2" Classes="card" Padding="0">
+            <Grid RowDefinitions="Auto,*">
+                <!-- Header coloane sticky -->
+                <Border Grid.Row="0"
+                        Background="{DynamicResource BgSurface2}"
+                        BorderBrush="{DynamicResource GlassBorder}"
+                        BorderThickness="0,0,0,1"
+                        Padding="20,12">
+                    <Grid ColumnDefinitions="100,2*,1.4*,Auto,Auto,Auto,1.2*,Auto">
+                        <TextBlock Grid.Column="0" Text="#" Classes="label" />
+                        <TextBlock Grid.Column="1" Text="TITLU" Classes="label" Margin="14,0,0,0" />
+                        <TextBlock Grid.Column="2" Text="CLIENT" Classes="label" />
+                        <TextBlock Grid.Column="3" Text="PRIORITATE" Classes="label" Margin="12,0" />
+                        <TextBlock Grid.Column="4" Text="STATUS" Classes="label" Margin="12,0" />
+                        <TextBlock Grid.Column="5" Text="ORE" Classes="label" Margin="12,0" />
+                        <TextBlock Grid.Column="6" Text="TEHNICIAN" Classes="label" Margin="12,0" />
+                        <TextBlock Grid.Column="7" Text="" Margin="12,0" />
+                    </Grid>
+                </Border>
+
+                <ListBox Grid.Row="1"
+                         Classes="flat-rows"
+                         ItemsSource="{Binding Items}"
+                         SelectedItem="{Binding Selected, Mode=TwoWay}"
+                         Background="Transparent">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="models:Ticket">
+                            <Border BorderBrush="{DynamicResource GlassBorder}"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="20,14">
+                                <Grid ColumnDefinitions="100,2*,1.4*,Auto,Auto,Auto,1.2*,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding NumarTichet}"
+                                               Classes="mono"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource Accent}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Titlu}"
+                                               Margin="14,0,0,0"
+                                               FontWeight="Medium"
+                                               TextTrimming="CharacterEllipsis"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding Client}"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               TextTrimming="CharacterEllipsis"
+                                               VerticalAlignment="Center" />
+
+                                    <!-- Pill prioritate — culoarea vine din convertor, "vorbeste fara cuvinte" -->
+                                    <Border Grid.Column="3" Classes="pill" Margin="12,0"
+                                            Padding="10,3"
+                                            VerticalAlignment="Center"
+                                            Background="#10FFFFFF"
+                                            BorderBrush="{Binding Prioritate, Converter={x:Static controls:Converters.PriorityToBrush}}"
+                                            BorderThickness="1">
+                                        <TextBlock Text="{Binding Prioritate}"
+                                                   FontSize="10" FontWeight="Bold"
+                                                   Foreground="{Binding Prioritate, Converter={x:Static controls:Converters.PriorityToBrush}}" />
+                                    </Border>
+
+                                    <Border Grid.Column="4" Classes="pill" Margin="12,0"
+                                            Padding="10,3"
+                                            VerticalAlignment="Center"
+                                            Background="Transparent"
+                                            BorderBrush="{Binding Status, Converter={x:Static controls:Converters.StatusToBrush}}"
+                                            BorderThickness="1">
+                                        <TextBlock Text="{Binding Status}"
+                                                   FontSize="10"
+                                                   Foreground="{Binding Status, Converter={x:Static controls:Converters.StatusToBrush}}" />
+                                    </Border>
+
+                                    <!-- Ore: cu o lumina rosie daca SLA-ul a fost depasit. Indicatie subliminala. -->
+                                    <Border Grid.Column="5" Margin="12,0" VerticalAlignment="Center"
+                                            Background="{Binding SlaDepasit, Converter={x:Static controls:Converters.SlaToBrush}}"
+                                            CornerRadius="6" Padding="8,4">
+                                        <TextBlock Text="{Binding OreDeschis, StringFormat='{}{0}h'}"
+                                                   FontSize="12" FontWeight="SemiBold" />
+                                    </Border>
+
+                                    <TextBlock Grid.Column="6"
+                                               Text="{Binding Tehnician}"
+                                               Margin="12,0"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               FontSize="12"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" />
+
+                                    <Button Grid.Column="7"
+                                            Classes="ghost"
+                                            Content="✕"
+                                            Width="32" Height="32" Padding="0"
+                                            ToolTip.Tip="Inchide tichetul"
+                                            Command="{Binding $parent[UserControl].((vm:TicketsViewModel)DataContext).CloseTicketCommand}"
+                                            CommandParameter="{Binding}"
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

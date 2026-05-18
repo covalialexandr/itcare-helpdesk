@@ -1,0 +1,286 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ITCareHelpdesk.App.ViewModels"
+        xmlns:svg="using:Avalonia.Svg.Skia"
+        xmlns:controls="using:ITCareHelpdesk.App.Controls"
+        x:Class="ITCareHelpdesk.App.Views.LoginWindow"
+        x:DataType="vm:LoginViewModel"
+        Title="ITCare — Autentificare"
+        Width="1100" Height="720"
+        MinWidth="960" MinHeight="640"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent">
+
+    <!-- Fereastra "ramane" borderless ca splash-ul; pastram coerenta vizuala in tot flow-ul de auth.
+         Folosim un singur Border-wrapper la 20px radius ca toata fereastra sa pluteasca. -->
+
+    <Border CornerRadius="20"
+            Background="{DynamicResource BgVoid}"
+            BorderBrush="{DynamicResource GlassBorder}"
+            BorderThickness="1"
+            BoxShadow="0 32 80 0 #00000080">
+
+        <Grid ColumnDefinitions="1.1*, 1*">
+
+            <!-- ============================================================
+                 PARTEA STANGA — "hero" cu logo si headline supradimensionat.
+                 Tipografia mare nu este eye-candy: ghideaza privirea catre
+                 dreapta unde sta formularul, formand un Z-pattern natural.
+                 ============================================================ -->
+            <Border Grid.Column="0"
+                    CornerRadius="20,0,0,20"
+                    ClipToBounds="True"
+                    PointerPressed="OnDragChromeAreaPressed">
+                <Grid>
+                    <Rectangle Fill="{DynamicResource BgRadialAccent}" />
+                    <controls:ParticleField />
+
+                    <StackPanel Margin="56,80,40,56"
+                                VerticalAlignment="Center"
+                                Spacing="20">
+
+                        <Viewbox Width="160" Height="56" HorizontalAlignment="Left">
+                            <svg:Svg Path="/Assets/logo-itcare.svg" />
+                        </Viewbox>
+
+                        <TextBlock Text="HELPDESK CONTROL" Classes="label" Margin="0,12,0,0" />
+
+                        <!-- Headline display: spargem cuvantul cheie pe linie noua, ca poezia.
+                             LineHeight 62 vs FontSize 64 da contraintuitiv un "ritm strans" -->
+                        <TextBlock Classes="display"
+                                   Text="Operatiunile IT,&#x0a;intr-o singura&#x0a;respiratie."
+                                   TextWrapping="Wrap"
+                                   LineHeight="62"
+                                   MaxWidth="540" />
+
+                        <TextBlock Classes="body"
+                                   Text="Tichete, SLA, asset-uri si rapoarte legate intr-un dashboard pe care echipa il deschide cu placere."
+                                   TextWrapping="Wrap"
+                                   MaxWidth="460"
+                                   Margin="0,8,0,0" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,32,0,0" Opacity="0.8">
+                            <Border Width="32" Height="1" Background="{DynamicResource Accent}" VerticalAlignment="Center" />
+                            <TextBlock Classes="mono muted" Text="v1.0 · practica ITCare 2026" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ============================================================
+                 PARTEA DREAPTA — host pentru 3 paneluri, doar unul vizibil.
+                 Le tinem suprapuse intr-un Grid si comutam IsVisible prin
+                 convertorul EnumEquals; alternativa cu TransitioningContentControl
+                 si DataTemplate per panel adauga 60 linii de XAML fara castig real.
+                 ============================================================ -->
+            <Border Grid.Column="1" Background="{DynamicResource BgDeep}" CornerRadius="0,20,20,0">
+                <Grid>
+                    <!-- "Drag-handle" peste tot panelul drept superior: 56px de bara invizibila
+                         pentru cei care vor sa miste fereastra fara butoane de chrome. -->
+                    <Border Height="56" VerticalAlignment="Top" Background="Transparent"
+                            PointerPressed="OnDragChromeAreaPressed" />
+
+                    <!-- Window chrome custom: minimize + close, asimetric in dreapta-sus -->
+                    <StackPanel Orientation="Horizontal" Spacing="6"
+                                HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Margin="0,16,20,0">
+                        <Button Content="—" Classes="ghost" Width="36" Height="36" Padding="0" FontSize="14" Click="OnMinimizeClick" />
+                        <Button Content="✕" Classes="ghost" Width="36" Height="36" Padding="0" FontSize="14" Click="OnCloseClick" />
+                    </StackPanel>
+
+                    <Grid Margin="64,80,64,40" VerticalAlignment="Center">
+
+                        <!-- ===== SIGN-IN PANEL ===== -->
+                        <StackPanel Spacing="22"
+                                    IsVisible="{Binding Panel, Converter={x:Static controls:Converters.EnumEquals}, ConverterParameter=SignIn}">
+                            <TextBlock Text="ACCES PLATFORMA" Classes="label" />
+                            <TextBlock Text="Conecteaza-te." Classes="h1" />
+                            <TextBlock Text="Foloseste contul tau corporate ITCare."
+                                       Classes="body" Margin="0,-12,0,0" />
+
+                            <StackPanel Spacing="8" Margin="0,8,0,0">
+                                <TextBlock Text="USERNAME" Classes="label" />
+                                <TextBox Text="{Binding Username, Mode=TwoWay}" Watermark="ex: marius.popescu" />
+                            </StackPanel>
+
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="PAROLA" Classes="label" />
+                                <TextBox Text="{Binding Password, Mode=TwoWay}" PasswordChar="•" Watermark="••••••••" />
+                            </StackPanel>
+
+                            <Border Background="#1AFF3B5C"
+                                    BorderBrush="{DynamicResource StatusCritical}"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="14,10"
+                                    CornerRadius="6"
+                                    IsVisible="{Binding SignInError, Converter={x:Static controls:Converters.StringNotEmpty}}">
+                                <TextBlock Text="{Binding SignInError}"
+                                           Foreground="{DynamicResource StatusCritical}"
+                                           FontSize="12" />
+                            </Border>
+
+                            <Button Classes="primary"
+                                    Content="Intra in cont"
+                                    Command="{Binding SignInCommand}"
+                                    IsDefault="True"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    Padding="20,16"
+                                    FontSize="15" />
+
+                            <Grid ColumnDefinitions="*,Auto,*" Margin="0,8,0,0">
+                                <Border Grid.Column="0" Height="1" Background="{DynamicResource GlassBorder}" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="sau" Classes="muted" Margin="14,0" />
+                                <Border Grid.Column="2" Height="1" Background="{DynamicResource GlassBorder}" VerticalAlignment="Center" />
+                            </Grid>
+
+                            <Button Classes="ghost"
+                                    Content="Creeaza un cont nou  →"
+                                    Command="{Binding GoToSignUpCommand}"
+                                    HorizontalAlignment="Center"
+                                    Padding="12,8" />
+                        </StackPanel>
+
+                        <!-- ===== SIGN-UP PANEL ===== -->
+                        <StackPanel Spacing="14"
+                                    IsVisible="{Binding Panel, Converter={x:Static controls:Converters.EnumEquals}, ConverterParameter=SignUp}">
+                            <Button Classes="ghost" Content="← Inapoi la autentificare"
+                                    Command="{Binding GoToSignInCommand}"
+                                    HorizontalAlignment="Left" Padding="6,4" FontSize="12" />
+
+                            <TextBlock Text="CONT NOU" Classes="label" />
+                            <TextBlock Text="Hai sa te inregistram." Classes="h2" />
+
+                            <Grid ColumnDefinitions="*,12,*" Margin="0,6,0,0">
+                                <StackPanel Grid.Column="0" Spacing="6">
+                                    <TextBlock Text="USERNAME" Classes="label" />
+                                    <TextBox Text="{Binding NewUsername, Mode=TwoWay}" Watermark="anatol.ovali" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Spacing="6">
+                                    <TextBlock Text="NUME COMPLET" Classes="label" />
+                                    <TextBox Text="{Binding NewFullName, Mode=TwoWay}" Watermark="Anatol Ovali" />
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="EMAIL" Classes="label" />
+                                <TextBox Text="{Binding NewEmail, Mode=TwoWay}" Watermark="anatol@itcare.ro" />
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*,12,*">
+                                <StackPanel Grid.Column="0" Spacing="6">
+                                    <TextBlock Text="PAROLA" Classes="label" />
+                                    <TextBox Text="{Binding NewPassword, Mode=TwoWay}" PasswordChar="•" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Spacing="6">
+                                    <TextBlock Text="CONFIRMA" Classes="label" />
+                                    <TextBox Text="{Binding ConfirmPassword, Mode=TwoWay}" PasswordChar="•" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Border Background="#1AFF3B5C"
+                                    BorderBrush="{DynamicResource StatusCritical}"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="14,10"
+                                    CornerRadius="6"
+                                    IsVisible="{Binding SignUpError, Converter={x:Static controls:Converters.StringNotEmpty}}">
+                                <TextBlock Text="{Binding SignUpError}"
+                                           Foreground="{DynamicResource StatusCritical}"
+                                           FontSize="12" />
+                            </Border>
+
+                            <Button Classes="primary"
+                                    Content="Continua spre verificare"
+                                    Command="{Binding BeginSignUpCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    Padding="20,14"
+                                    FontSize="14" />
+                        </StackPanel>
+
+                        <!-- ===== OTP PANEL ===== -->
+                        <StackPanel Spacing="22"
+                                    IsVisible="{Binding Panel, Converter={x:Static controls:Converters.EnumEquals}, ConverterParameter=OtpVerify}">
+                            <Button Classes="ghost" Content="← Inapoi"
+                                    Command="{Binding BackFromOtpCommand}"
+                                    HorizontalAlignment="Left" Padding="6,4" FontSize="12" />
+
+                            <TextBlock Text="VERIFICARE" Classes="label" />
+                            <TextBlock Text="Verifica adresa." Classes="h1" />
+                            <TextBlock Classes="body" TextWrapping="Wrap" MaxWidth="380">
+                                <Run Text="Am trimis un cod de 6 cifre la " />
+                                <Run Text="{Binding OtpIdentifier}" Foreground="{DynamicResource Accent}" FontWeight="SemiBold" />
+                                <Run Text="." />
+                            </TextBlock>
+
+                            <!-- 6 casute OTP. Code-behind muta focusul la urmatoarea la fiecare keystroke. -->
+                            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left">
+                                <TextBox Classes="otp" Name="OtpBox1" Text="{Binding OtpD1, Mode=TwoWay}" />
+                                <TextBox Classes="otp" Name="OtpBox2" Text="{Binding OtpD2, Mode=TwoWay}" />
+                                <TextBox Classes="otp" Name="OtpBox3" Text="{Binding OtpD3, Mode=TwoWay}" />
+                                <TextBox Classes="otp" Name="OtpBox4" Text="{Binding OtpD4, Mode=TwoWay}" />
+                                <TextBox Classes="otp" Name="OtpBox5" Text="{Binding OtpD5, Mode=TwoWay}" />
+                                <TextBox Classes="otp" Name="OtpBox6" Text="{Binding OtpD6, Mode=TwoWay}" />
+                            </StackPanel>
+
+                            <Border Background="#1AFF3B5C"
+                                    BorderBrush="{DynamicResource StatusCritical}"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="14,10"
+                                    CornerRadius="6"
+                                    IsVisible="{Binding OtpError, Converter={x:Static controls:Converters.StringNotEmpty}}">
+                                <TextBlock Text="{Binding OtpError}"
+                                           Foreground="{DynamicResource StatusCritical}"
+                                           FontSize="12" />
+                            </Border>
+
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Button Classes="primary"
+                                        Content="Verifica si creeaza cont"
+                                        Command="{Binding VerifyOtpAndCreateAccountCommand}"
+                                        Padding="20,14"
+                                        FontSize="14" />
+                                <Button Classes="ghost"
+                                        Content="Retrimite cod"
+                                        Command="{Binding ResendOtpCommand}"
+                                        Padding="14,12" />
+                            </StackPanel>
+
+                            <TextBlock Classes="muted" TextWrapping="Wrap" MaxWidth="380"
+                                       Text="Modul simulare: codul este afisat in toast — in productie va fi trimis prin SMS/email." />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Busy overlay — apare peste panelul drept fara sa acopere hero-ul -->
+                    <Border Background="#CC06070D"
+                            CornerRadius="0,20,20,0"
+                            IsVisible="{Binding IsBusy}">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16">
+                            <!-- Spinner pulsatoriu: in loc de RotateTransform animat (care necesita un
+                                 animator explicit in Avalonia 11 si nu functioneaza cu sintaxa rotate()),
+                                 animam Opacity-ul unui cerc plin. Mai simplu, look modern, zero risc. -->
+                            <Border Width="42" Height="42" CornerRadius="21"
+                                    Background="{DynamicResource Accent}"
+                                    BoxShadow="0 0 28 0 #8043BAFF">
+                                <Border.Styles>
+                                    <Style Selector="Border">
+                                        <Style.Animations>
+                                            <Animation Duration="0:0:1.2" IterationCount="INFINITE">
+                                                <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.25" /></KeyFrame>
+                                                <KeyFrame Cue="50%"><Setter Property="Opacity" Value="1.0" /></KeyFrame>
+                                                <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.25" /></KeyFrame>
+                                            </Animation>
+                                        </Style.Animations>
+                                    </Style>
+                                </Border.Styles>
+                            </Border>
+                            <TextBlock Text="{Binding BusyMessage}" Classes="body" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
