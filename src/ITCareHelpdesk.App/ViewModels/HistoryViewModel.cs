@@ -7,6 +7,23 @@ using ITCareHelpdesk.App.Services;
 
 namespace ITCareHelpdesk.App.ViewModels;
 
+// ============================================================
+// HistoryViewModel
+// ============================================================
+// ViewModel pentru pagina "Istoric" — timeline cronologic al activitatii pe tichete.
+// Vede toate comentariile, schimbarile de status, asignarile facute in intervalul ales.
+//
+// Filtru pe interval — 7, 14, sau 30 de zile inapoi. La schimbarea valorii DaysBack,
+// se re-incarca lista automat (hook-ul OnDaysBackChanged generat de [ObservableProperty]).
+// Asta ofera feedback instant la apasarea butoanelor "7 zile / 14 / 30" din UI.
+//
+// Datele vin de la procedura sp_GetIstoricActivitate care formateaza data ca string
+// romanesc — UI-ul nu trebuie sa stie de formatare data.
+//
+// Filtre suplimentare (pe client sau pe un anumit tichet) sunt suportate la nivel de
+// repository, dar UI-ul curent doar foloseste filtrul de zile. Putem expune si celelalte
+// daca avem timp pentru un toolbar mai bogat.
+// ============================================================
 public sealed partial class HistoryViewModel : ViewModelBase
 {
     private readonly HistoryRepository _history;

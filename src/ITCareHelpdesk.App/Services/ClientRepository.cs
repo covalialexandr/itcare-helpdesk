@@ -5,6 +5,22 @@ using ITCareHelpdesk.App.Models;
 
 namespace ITCareHelpdesk.App.Services;
 
+// ============================================================
+// ClientRepository
+// ============================================================
+// Punct unic de acces la tabela "Clienti" din baza de date.
+// Pentru fiecare entitate principala (Tichet, Client, Tehnician, Asset, etc.) avem
+// cate un Repository — asa logica de query SQL ramane localizata si nu e imprastiata
+// prin ViewModels.
+//
+// Acest repository expune o singura metoda — GetAllAsync — pentru ca pagina Clienti
+// doar listeaza si filtreaza local. Daca pe viitor adaugam CRUD complet (creare/editare/dezactivare),
+// metodele noi vin tot aici.
+//
+// Subquery-ul cu COUNT(*) pe tabela Tichete da fiecarui client si numarul lui de tichete —
+// asa UI-ul poate afisa indicatorul "X tichete" pe cardul fiecarui client fara a face un al
+// doilea round-trip la baza de date.
+// ============================================================
 public sealed class ClientRepository
 {
     private readonly DatabaseService _db;

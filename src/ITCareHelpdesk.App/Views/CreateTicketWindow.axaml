@@ -109,6 +109,44 @@
                         </StackPanel>
                     </Grid>
 
+                    <!-- AI suggest banner — apare doar daca AI este configurat (cheie API setata) -->
+                    <Border Background="{DynamicResource BgSurface1}"
+                            BorderBrush="{DynamicResource GlassBorderActive}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="16,12"
+                            IsVisible="{Binding AiEnabled}">
+                        <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                            <!-- "AI" emblem in cyan -->
+                            <Border Grid.Column="0"
+                                    Width="36" Height="36" CornerRadius="18"
+                                    Background="{DynamicResource AccentGradient}">
+                                <TextBlock Text="AI"
+                                           FontSize="11" FontWeight="Black"
+                                           Foreground="#06070D"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0" Spacing="2">
+                                <TextBlock Text="ASISTENT AI" Classes="label" />
+                                <TextBlock Text="Lasa Claude sa propuna categoria si prioritatea pe baza titlului."
+                                           FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                                <TextBlock Text="{Binding AiSuggestion}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource Accent}"
+                                           FontStyle="Italic"
+                                           TextWrapping="Wrap"
+                                           Margin="0,4,0,0"
+                                           IsVisible="{Binding AiSuggestion, Converter={x:Static controls:Converters.StringNotEmpty}}" />
+                            </StackPanel>
+                            <Button Grid.Column="2"
+                                    Classes="primary"
+                                    Content="✨ Sugereaza"
+                                    Command="{Binding SuggestCommand}"
+                                    Padding="14,10"
+                                    FontSize="12" />
+                        </Grid>
+                    </Border>
+
                     <!-- Mesaj eroare -->
                     <Border Background="#1AFF3B5C"
                             BorderBrush="{DynamicResource StatusCritical}"

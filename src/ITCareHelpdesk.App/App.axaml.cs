@@ -10,11 +10,36 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ITCareHelpdesk.App;
 
+// ============================================================
+// App.axaml.cs
+// ============================================================
+// Inima aplicatiei la pornire. Aici se intampla trei lucruri cruciale:
+//
+//   1. INITIALIZE — incarca tema (Dark) si paleta (Palette.axaml + DarkTheme.axaml + Controls.axaml)
+//      Apelat de Avalonia la initializare; XAML parser-ul citeste App.axaml si construieste
+//      structura de stiluri globale.
+//
+//   2. ConfigureServices — construieste containerul de Dependency Injection.
+//      Aici se inregistreaza TOATE serviciile si toate ViewModels. La runtime, cand un VM
+//      cere DatabaseService (de exemplu), containerul i-l furnizeaza din aceasta colectie.
+//      Distinctia singleton/transient:
+//         - SINGLETON  (servicii infrastructura: DB, Auth, Toast) — o singura instanta pe app
+//         - TRANSIENT  (ViewModels) — instanta noua la fiecare cerere, ca state-ul sa fie "proaspat"
+//                     la fiecare navigare
+//
+//   3. OnFrameworkInitializationCompleted — momentul cand UI-ul este gata sa primeasca o fereastra.
+//      Aici deschidem SplashWindow ca prima fereastra (verifica DB-ul, apoi trece la Login).
+//      ShutdownMode = OnLastWindowClose — daca splash-ul se inchide si Login-ul e deschis,
+//      aplicatia ramane in viata.
+//
+// COMPROMIS DE DESIGN: containerul DI este expus ca proprietate STATICA (App.Services).
+// E o practica oarecum controversata in mediile enterprise — dar pentru o aplicatie
+// desktop monolitica de marime medie, e cel mai simplu mod de a-l accesa din locuri unde
+// nu avem injection direct (ex. cand deschidem dinamic CreateTicketWindow dintr-un click handler).
+// In schimb evitam un ServiceLocator pattern explicit, si totul ramane testabil prin substitution.
+// ============================================================
 public partial class App : Application
 {
-    // DI container expus static — practica controversata, dar pentru o aplicatie desktop
-    // monolitica de marime medie ramane cel mai simplu mod sa accesam serviciile
-    // din ViewModels fara sa avem dependency injection complet pe ReactiveUI.
     public static IServiceProvider Services { get; private set; } = null!;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -67,6 +92,7 @@ public partial class App : Application
         services.AddSingleton<AssetRepository>();
         services.AddSingleton<HistoryRepository>();
         services.AddSingleton<CategoryRepository>();
+        services.AddSingleton<AiSuggestionService>();
 
         // ViewModels — transient ca sa avem state proaspat la fiecare navigare
         services.AddTransient<SplashViewModel>();
@@ -80,6 +106,7 @@ public partial class App : Application
         services.AddTransient<ReportsViewModel>();
         services.AddTransient<HistoryViewModel>();
         services.AddTransient<CreateTicketViewModel>();
+        services.AddSingleton<TicketDetailViewModel>(); // singleton — un singur drawer in toata aplicatia
 
         Services = services.BuildServiceProvider();
     }

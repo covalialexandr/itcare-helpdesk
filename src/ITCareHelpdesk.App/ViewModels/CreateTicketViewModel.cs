@@ -19,6 +19,11 @@ public sealed partial class CreateTicketViewModel : ViewModelBase
     private readonly StatsRepository _stats;
     private readonly SessionService _session;
     private readonly ToastService _toast;
+    private readonly AiSuggestionService _ai;
+
+    // Daca cheia AI lipseste, ascundem butonul "Sugereaza" — nu vrem un buton care nu face nimic
+    public bool AiEnabled => _ai.IsConfigured;
+    [ObservableProperty] private string? _aiSuggestion;
 
     public ObservableCollection<Client> ClientOptions { get; } = new();
     public ObservableCollection<CategoryOption> CategoryOptions { get; } = new();
@@ -44,7 +49,8 @@ public sealed partial class CreateTicketViewModel : ViewModelBase
         CategoryRepository categories,
         StatsRepository stats,
         SessionService session,
-        ToastService toast)
+        ToastService toast,
+        AiSuggestionService ai)
     {
         _tickets = tickets;
         _clients = clients;
@@ -52,7 +58,63 @@ public sealed partial class CreateTicketViewModel : ViewModelBase
         _stats = stats;
         _session = session;
         _toast = toast;
+        _ai = ai;
         _ = LoadOptionsAsync();
+    }
+
+    [RelayCommand]
+    private async Task SuggestAsync()
+    {
+        AiSuggestion = null;
+        if (!_ai.IsConfigured)
+        {
+            ErrorMessage = "AI nu este configurat. Adauga AnthropicApiKey in appsettings.json.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(Titlu) || Titlu.Length < 6)
+        {
+            ErrorMessage = "Scrie cel putin titlul (6+ caractere) inainte sa ceri sugestie.";
+            return;
+        }
+
+        IsBusy = true;
+        BusyMessage = "Cerem sugestia AI...";
+        try
+        {
+            var sug = await _ai.SuggestAsync(Titlu, Descriere, CategoryOptions);
+            if (sug is null)
+            {
+                ErrorMessage = "AI nu a returnat o sugestie utilizabila.";
+                return;
+            }
+
+            // Aplicam sugestia in dropdown-uri
+            foreach (var c in CategoryOptions)
+            {
+                if (c.CategorieId == sug.CategorieId)
+                {
+                    SelectedCategory = c;
+                    break;
+                }
+            }
+            if (!string.IsNullOrWhiteSpace(sug.Prioritate))
+            {
+                var priority = sug.Prioritate.ToUpperInvariant();
+                if (Priorities.Contains(priority))
+                    SelectedPriority = priority;
+            }
+
+            AiSuggestion = sug.Motiv;
+            _toast.ShowSuccess("Sugestie AI", "Categorie si prioritate pre-completate.");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Eroare AI: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private async Task LoadOptionsAsync()

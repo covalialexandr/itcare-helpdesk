@@ -6,6 +6,9 @@
              x:Class="ITCareHelpdesk.App.Views.TicketsView"
              x:DataType="vm:TicketsViewModel">
 
+    <!-- Grid suprapus: conținutul paginii + drawer-ul de detalii care apare peste -->
+    <Grid>
+
     <Grid RowDefinitions="Auto,Auto,*" Margin="32,28,32,32">
 
         <!-- Header — titlu + KPI inline. Punem totalul + intarziate ca metrici "respiratoare"
@@ -171,5 +174,252 @@
                 </ListBox>
             </Grid>
         </Border>
+    </Grid>
+
+    <!-- ====================================================
+         DRAWER OVERLAY pentru detalii tichet
+         ==================================================== -->
+    <!-- Backdrop semi-transparent care intercepteaza clickul pe restul paginii -->
+    <Border Background="#90000000"
+            IsVisible="{Binding Detail.IsOpen}"
+            PointerPressed="OnBackdropClick" />
+
+    <!-- Drawer-ul propriu-zis — 540px latime, slide-in din dreapta -->
+    <Border HorizontalAlignment="Right"
+            Width="560"
+            IsVisible="{Binding Detail.IsOpen}"
+            Background="{DynamicResource BgDeep}"
+            BorderBrush="{DynamicResource GlassBorderActive}"
+            BorderThickness="1,0,0,0"
+            BoxShadow="-32 0 80 0 #CC000000">
+
+        <Grid RowDefinitions="Auto,*,Auto" DataContext="{Binding Detail}">
+
+            <!-- ===== HEADER: numar tichet + status + close ===== -->
+            <Border Grid.Row="0" Padding="24,20,20,18"
+                    BorderBrush="{DynamicResource GlassBorder}"
+                    BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Spacing="6">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="{Binding Ticket.NumarTichet}"
+                                       Classes="mono"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource Accent}"
+                                       VerticalAlignment="Center" />
+                            <Border Classes="pill" Padding="10,3"
+                                    VerticalAlignment="Center"
+                                    Background="Transparent"
+                                    BorderBrush="{Binding Ticket.Status, Converter={x:Static controls:Converters.StatusToBrush}}"
+                                    BorderThickness="1">
+                                <TextBlock Text="{Binding Ticket.Status}"
+                                           FontSize="9" FontWeight="Bold"
+                                           Foreground="{Binding Ticket.Status, Converter={x:Static controls:Converters.StatusToBrush}}" />
+                            </Border>
+                            <Border Classes="pill" Padding="10,3"
+                                    VerticalAlignment="Center"
+                                    Background="#10FFFFFF"
+                                    BorderBrush="{Binding Ticket.Prioritate, Converter={x:Static controls:Converters.PriorityToBrush}}"
+                                    BorderThickness="1">
+                                <TextBlock Text="{Binding Ticket.Prioritate}"
+                                           FontSize="9" FontWeight="Bold"
+                                           Foreground="{Binding Ticket.Prioritate, Converter={x:Static controls:Converters.PriorityToBrush}}" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Ticket.Titlu}"
+                                   Classes="h3"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="✕" Classes="ghost"
+                            Width="34" Height="34" Padding="0"
+                            VerticalAlignment="Top"
+                            Command="{Binding CloseCommand}" />
+                </Grid>
+            </Border>
+
+            <!-- ===== CONTINUT scrollabil ===== -->
+            <ScrollViewer Grid.Row="1" Padding="24,18">
+                <StackPanel Spacing="18">
+
+                    <!-- Bloc descriere -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="DESCRIERE" Classes="label" />
+                        <Border Background="{DynamicResource BgSurface1}"
+                                BorderBrush="{DynamicResource GlassBorder}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="14,12">
+                            <TextBlock Text="{Binding Ticket.Descriere, FallbackValue='—', TargetNullValue='Fara descriere.'}"
+                                       FontSize="12" TextWrapping="Wrap" />
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Bloc metadata in grid 2 col -->
+                    <Grid ColumnDefinitions="*,12,*" RowDefinitions="Auto,12,Auto,12,Auto">
+                        <StackPanel Grid.Row="0" Grid.Column="0" Spacing="4">
+                            <TextBlock Text="CLIENT" Classes="label" />
+                            <TextBlock Text="{Binding Ticket.Client}" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="2" Spacing="4">
+                            <TextBlock Text="CATEGORIE" Classes="label" />
+                            <TextBlock Text="{Binding Ticket.Categorie}" FontSize="12" />
+                            <TextBlock Text="{Binding Ticket.Departament}" Classes="mono muted" FontSize="9" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Grid.Column="0" Spacing="4">
+                            <TextBlock Text="TEHNICIAN" Classes="label" />
+                            <TextBlock Text="{Binding Ticket.Tehnician}" FontSize="12" />
+                            <TextBlock Text="{Binding Ticket.NivelTehnician, FallbackValue=''}" Classes="mono muted" FontSize="9" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="2" Spacing="4">
+                            <TextBlock Text="TIP" Classes="label" />
+                            <TextBlock Text="{Binding Ticket.Tip}" FontSize="12" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="4" Grid.Column="0" Spacing="4">
+                            <TextBlock Text="DESCHIS DE" Classes="label" />
+                            <TextBlock Text="{Binding Ticket.DataDeschidere, StringFormat='{}{0:dd MMM yyyy HH:mm}'}"
+                                       Classes="mono" FontSize="11" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="4" Grid.Column="2" Spacing="4">
+                            <TextBlock Text="ORE DESCHIS" Classes="label" />
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding Ticket.OreDeschis}" FontSize="18" FontWeight="Bold"
+                                           Foreground="{DynamicResource Accent}" />
+                                <TextBlock Text="h" FontSize="12" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Bottom" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- SLA info — apare doar daca tichetul are SLA atasat -->
+                    <Border Classes="card-glow"
+                            Padding="16,12"
+                            IsVisible="{Binding Ticket.TipSla, Converter={x:Static controls:Converters.StringNotEmpty}}">
+                        <Grid ColumnDefinitions="*,Auto,Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="SLA ACTIV" Classes="label" />
+                                <TextBlock Text="{Binding Ticket.TipSla}" FontSize="14" FontWeight="Bold"
+                                           Foreground="{DynamicResource Accent}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="12,0" Spacing="2">
+                                <TextBlock Text="RASPUNS" Classes="label" />
+                                <TextBlock Text="{Binding Ticket.TimpRaspunsOre, StringFormat='{}{0}h'}"
+                                           FontSize="13" FontWeight="SemiBold" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0" Spacing="2">
+                                <TextBlock Text="REZOLVARE" Classes="label" />
+                                <TextBlock Text="{Binding Ticket.TimpRezolvareOre, StringFormat='{}{0}h'}"
+                                           FontSize="13" FontWeight="SemiBold" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- ===== TIMELINE ISTORIC ===== -->
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="ISTORIC ACTIVITATE" Classes="label" />
+
+                        <ItemsControl ItemsSource="{Binding History}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="2" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="models:HistoryEntry">
+                                    <Grid ColumnDefinitions="24,*" Margin="0,4">
+                                        <Grid Grid.Column="0">
+                                            <Border Width="1" Background="{DynamicResource GlassBorder}" HorizontalAlignment="Center" />
+                                            <Ellipse Width="9" Height="9"
+                                                     Fill="{DynamicResource Accent}"
+                                                     Stroke="{DynamicResource BgDeep}"
+                                                     StrokeThickness="2"
+                                                     HorizontalAlignment="Center"
+                                                     VerticalAlignment="Top"
+                                                     Margin="0,8,0,0" />
+                                        </Grid>
+                                        <Border Grid.Column="1"
+                                                Background="{DynamicResource BgSurface1}"
+                                                BorderBrush="{DynamicResource GlassBorder}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="12,10"
+                                                Margin="6,0,0,0">
+                                            <StackPanel Spacing="4">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <Border Classes="pill" Background="{DynamicResource GlassFill}"
+                                                            BorderBrush="{DynamicResource GlassBorder}" BorderThickness="1"
+                                                            Padding="8,2">
+                                                        <TextBlock Text="{Binding TipActivitate}" FontSize="8" FontWeight="SemiBold" />
+                                                    </Border>
+                                                    <TextBlock Text="{Binding EfectuatDe}"
+                                                               Classes="mono muted" FontSize="9" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Mesaj}" FontSize="11" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding DataActivitate}"
+                                                           Classes="mono muted" FontSize="9" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ===== FOOTER cu actiuni ===== -->
+            <Border Grid.Row="2" Padding="20,16"
+                    BorderBrush="{DynamicResource GlassBorder}"
+                    BorderThickness="0,1,0,0">
+                <StackPanel Spacing="10">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="ADAUGA COMENTARIU" Classes="label" />
+                        <TextBox Text="{Binding NewComment, Mode=TwoWay}"
+                                 Watermark="Scrie un comentariu, observatie, sau nota de inchidere..."
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="60" />
+                    </StackPanel>
+                    <Grid ColumnDefinitions="*,Auto,Auto">
+                        <TextBlock Grid.Column="0" Classes="muted" FontSize="10"
+                                   Text="Salvat in istoric, vizibil tuturor membrilor echipei."
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1" Classes="ghost" Content="+ Comentariu"
+                                Command="{Binding AddCommentCommand}"
+                                Padding="14,8" Margin="0,0,8,0" />
+                        <Button Grid.Column="2" Classes="primary" Content="✓ Inchide tichetul"
+                                Command="{Binding CloseTicketCommand}"
+                                Padding="16,8"
+                                IsEnabled="{Binding Ticket.Status, Converter={x:Static controls:Converters.StringNotEmpty}}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Busy overlay pe drawer -->
+            <Border Grid.Row="0" Grid.RowSpan="3"
+                    Background="#CC0B0F1A"
+                    IsVisible="{Binding IsBusy}">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="14">
+                    <Border Width="32" Height="32" CornerRadius="16"
+                            Background="{DynamicResource Accent}">
+                        <Border.Styles>
+                            <Style Selector="Border">
+                                <Style.Animations>
+                                    <Animation Duration="0:0:1.2" IterationCount="INFINITE">
+                                        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.25" /></KeyFrame>
+                                        <KeyFrame Cue="50%"><Setter Property="Opacity" Value="1.0" /></KeyFrame>
+                                        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.25" /></KeyFrame>
+                                    </Animation>
+                                </Style.Animations>
+                            </Style>
+                        </Border.Styles>
+                    </Border>
+                    <TextBlock Text="{Binding BusyMessage}" Classes="body" HorizontalAlignment="Center" FontSize="12" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+
     </Grid>
 </UserControl>

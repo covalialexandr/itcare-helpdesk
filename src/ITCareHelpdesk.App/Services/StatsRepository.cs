@@ -5,6 +5,27 @@ using ITCareHelpdesk.App.Models;
 
 namespace ITCareHelpdesk.App.Services;
 
+// ============================================================
+// StatsRepository
+// ============================================================
+// "Repository de agregari" — diferit de celelalte repository-uri care merg pe o tabela.
+// Aici stau toate query-urile de tip statistic, calculate prin SUM/COUNT/AVG/GROUP BY.
+// Folosit aproape exclusiv de DashboardViewModel pentru a popula KPI-urile si chart-urile.
+//
+// Metode disponibile:
+//   GetKpiAsync               - un SINGUR query cu mai multe subqueries pentru cele 6 KPI principale.
+//                               Optimizare deliberata: 6 metrici intr-un round-trip in loc de 6.
+//   GetTechniciansAsync       - statistici per tehnician (sp_GetStatisticiTehnicieni)
+//   GetTopTechniciansAsync    - top N tehnicieni dupa numarul de tichete rezolvate, cu loc_clasament
+//   GetCategoryStatsAsync     - statistici per categorie (volum, procent rezolvat, timp mediu)
+//   GetStatusDistributionAsync - pentru chart-ul donut: numar tichete per status
+//   GetResolvedByDayAsync     - pentru sparkline: tichete rezolvate per zi pe ultimele N zile.
+//                               Foloseste un CTE cu calendar generat ca sa avem si zilele "cu 0",
+//                               altfel sparkline-ul ar avea gauri si trendline-ul ar fi confuz.
+//
+// Toate metodele sunt async ca apelantul (DashboardViewModel) sa poata rula cu Task.WhenAll
+// — adica toate cererile in paralel, NU secvential.
+// ============================================================
 public sealed class StatsRepository
 {
     private readonly DatabaseService _db;
@@ -68,6 +89,13 @@ public sealed class StatsRepository
 
         // KPI-uri agregate intr-un singur round-trip — fiecare subquery costa,
         // dar ramane mai ieftin decat 6 trip-uri separate la baza.
+        //
+        // ATENTIE pe sla_compliance: SQL Server NU permite SUM() peste o expresie care contine
+        // o subquery corelata. Anterior aveam:
+        //    SUM(CASE WHEN ... <= ISNULL((SELECT ... FROM ContracteSLA s WHERE s.sla_id = t.sla_id)) ...)
+        // si pica cu "Cannot perform an aggregate function on an expression containing an aggregate
+        // or a subquery". Rezolvarea corecta este sa facem LEFT JOIN pe ContracteSLA in subselect-ul
+        // de sla_compliance, asa expresia din SUM devine plata (fara subquery).
         var sql = @"
             SELECT
               (SELECT COUNT(*) FROM Tichete WHERE status IN (N'OPEN', N'IN_PROGRESS')) AS open_count,
@@ -78,13 +106,13 @@ public sealed class StatsRepository
               (SELECT COUNT(*) FROM Clienti WHERE activ = 1) AS active_clients,
               (SELECT AVG(CAST(rating_client AS DECIMAL(3,2))) FROM Tichete WHERE rating_client IS NOT NULL) AS avg_sat,
               (SELECT CAST(
-                  SUM(CASE WHEN data_rezolvare IS NOT NULL
-                            AND DATEDIFF(HOUR, data_deschidere, data_rezolvare) <=
-                                ISNULL((SELECT timp_rezolvare_ore FROM ContracteSLA s WHERE s.sla_id = t.sla_id), 999999)
+                  SUM(CASE WHEN t.data_rezolvare IS NOT NULL
+                            AND DATEDIFF(HOUR, t.data_deschidere, t.data_rezolvare) <= ISNULL(sla.timp_rezolvare_ore, 999999)
                             THEN 1 ELSE 0 END) * 100.0 /
-                  NULLIF(SUM(CASE WHEN data_rezolvare IS NOT NULL THEN 1 ELSE 0 END), 0)
+                  NULLIF(SUM(CASE WHEN t.data_rezolvare IS NOT NULL THEN 1 ELSE 0 END), 0)
                   AS INT)
-               FROM Tichete t) AS sla_compliance";
+               FROM Tichete t
+               LEFT JOIN ContracteSLA sla ON sla.sla_id = t.sla_id) AS sla_compliance";
 
         await using var cmd = new Microsoft.Data.SqlClient.SqlCommand(sql, conn);
         await using var reader = await cmd.ExecuteReaderAsync();

@@ -5,8 +5,29 @@ using ITCareHelpdesk.App.Services;
 
 namespace ITCareHelpdesk.App.ViewModels;
 
-// MainWindowViewModel orchestreaza shell-ul: sidebar nav + content host + user pill.
-// Expune NavigationService direct ca View-ul sa poata observa CurrentView prin binding.
+// ============================================================
+// MainWindowViewModel
+// ============================================================
+// ViewModel-ul "shell-ului" — fereastra principala dupa autentificare. Nu contine logica
+// de business, ci orchestreaza:
+//   1. Sidebar-ul cu cele 7 nav items (Dashboard, Tichete, Clienti, etc.)
+//   2. Content host-ul care afiseaza pagina curenta
+//   3. User-pill-ul din coltul stanga jos cu numele + rolul + buton sign-out
+//   4. Search palette-ul din top bar (placeholder pentru viitor Ctrl+K)
+//   5. Toast queue (notificarile colt dreapta-jos)
+//
+// EXPUNERE DE SERVICII direct ca proprietati:
+//   Nav     -> NavigationService — schimba pagina curenta cand userul da click pe sidebar
+//   Session -> SessionService — afiseaza userul logat in pill
+//   Toasts  -> ToastService — coada de notificari
+//
+// Aceasta abordare permite XAML-ului sa faca binding direct: "{Binding Session.CurrentUser.NumeComplet}".
+// Trade-off: ViewModel-ul devine usor "thin", dar in schimb pastram totul declarativ in XAML
+// fara middleware-uri inutile.
+//
+// NavItem: record local cu Titlu + Glyph (caracter Unicode) + AppPage enum. Tinem mapping-ul
+// aici in loc de XAML ca sa avem o sursa UNICA — daca adaugam o pagina noua, schimbam un singur loc.
+// ============================================================
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
     public NavigationService Nav { get; }

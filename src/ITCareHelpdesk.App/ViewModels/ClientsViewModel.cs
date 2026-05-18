@@ -8,8 +8,29 @@ using ITCareHelpdesk.App.Services;
 
 namespace ITCareHelpdesk.App.ViewModels;
 
-// Clientii sunt liste mai mici (~zeci), deci nu ne batem capul cu virtualizare. Putem
-// permite filtru live fara DB rountrip.
+// ============================================================
+// ClientsViewModel
+// ============================================================
+// ViewModel pentru pagina "Clienti" — galeria cu toti clientii activi.
+//
+// Logica de filtrare: cum portofoliul tipic de clienti are zeci (nu mii), facem
+// filtrarea CLIENT-SIDE — adica incarcam toata lista o data si filtrul "search" o
+// reduce in memorie, fara round-trip la baza de date. Daca lista creste la 10.000+
+// clienti, ar trebui sa mutam filtrarea SQL-side (sa apelam un SP cu parametri de
+// cautare); momentan nu e cazul.
+//
+// State:
+//   _all          - lista master (citita o data la load)
+//   Items         - lista vizibila in UI (sub-set filtrat)
+//   SearchText    - input-ul user-ului din toolbar
+//   Selected      - clientul curent selectat (pentru viitor cand vom adauga detail panel)
+//
+// Comportament:
+//   - OnSearchTextChanged se cheama automat (generat de [ObservableProperty]) la fiecare
+//     keystroke; reaplica filtru pe nume, oras, industrie
+//   - LoadAsync se cheama la constructor si la click pe "Refresh"
+//   - In caz de eroare DB, se afiseaza un toast rosu si lista ramane goala
+// ============================================================
 public sealed partial class ClientsViewModel : ViewModelBase
 {
     private readonly ClientRepository _clients;

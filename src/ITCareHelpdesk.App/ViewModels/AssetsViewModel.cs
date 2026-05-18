@@ -8,6 +8,22 @@ using ITCareHelpdesk.App.Services;
 
 namespace ITCareHelpdesk.App.ViewModels;
 
+// ============================================================
+// AssetsViewModel
+// ============================================================
+// ViewModel pentru pagina "Asset-uri" — inventarul echipamentelor IT al clientilor.
+//
+// Filtrul de tip echipament este DINAMIC: dropdown-ul se populeaza din valorile distincte
+// existente in baza la load. Daca apare un tip nou de asset in DB (ex. "Drona"), apare
+// automat in dropdown la urmatorul refresh. NU hardcodam tipurile in cod.
+//
+// Filtrarea (atat pe tip cat si pe cautare text liber) se face CLIENT-SIDE in memoria
+// aplicatiei — _all retine lista master, Items contine sub-setul afisat. Search match-uieste
+// pe cod_asset, denumire, client si producator deodata.
+//
+// Selected nu este folosit momentan pentru navigare; pe viitor poate deschide un detail
+// panel similar cu cel de tichete.
+// ============================================================
 public sealed partial class AssetsViewModel : ViewModelBase
 {
     private readonly AssetRepository _assets;

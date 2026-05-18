@@ -36,6 +36,80 @@ public sealed class TicketRepository
             MapTicketSlim,
             ("@ore_raspuns_max", oreRaspunsMax));
 
+    // Citim un singur tichet cu descrierea completa (vw_TicheteActive nu o include — view-ul e optimizat
+    // pentru lista). Aici facem un query direct ca sa luam toate detaliile pentru drawer.
+    public async Task<Ticket?> GetByIdAsync(int tichetId)
+    {
+        await using var conn = await _db.OpenConnectionAsync();
+        await using var cmd = new SqlCommand(@"
+            SELECT
+                t.tichet_id, t.numar_tichet, t.titlu, t.descriere,
+                c.nume_companie AS client,
+                cat.nume_categorie AS categorie,
+                d.nume_departament AS departament,
+                t.prioritate, t.status, t.tip,
+                ISNULL(teh.prenume + N' ' + teh.nume, N'—') AS tehnician,
+                teh.nivel AS nivel_tehnician,
+                sla.tip_sla, sla.timp_raspuns_ore, sla.timp_rezolvare_ore,
+                DATEDIFF(HOUR, t.data_deschidere, GETDATE()) AS ore_deschis,
+                CASE
+                    WHEN sla.sla_id IS NULL THEN 0
+                    WHEN t.data_rezolvare IS NOT NULL THEN 0
+                    WHEN DATEDIFF(HOUR, t.data_deschidere, GETDATE()) > sla.timp_rezolvare_ore THEN 1
+                    ELSE 0
+                END AS sla_depasit,
+                t.data_deschidere, t.data_rezolvare, t.data_inchidere,
+                t.ore_lucrate, t.rating_client
+            FROM Tichete t
+            JOIN Clienti c          ON t.client_id    = c.client_id
+            JOIN Categorii cat      ON t.categorie_id = cat.categorie_id
+            JOIN Departamente d     ON cat.departament_id = d.departament_id
+            LEFT JOIN Tehnicieni teh ON t.tehnician_id  = teh.tehnician_id
+            LEFT JOIN ContracteSLA sla ON t.sla_id       = sla.sla_id
+            WHERE t.tichet_id = @id", conn);
+        cmd.Parameters.AddWithValue("@id", tichetId);
+
+        await using var r = await cmd.ExecuteReaderAsync();
+        if (!await r.ReadAsync()) return null;
+
+        return new Ticket(
+            TichetId:         r.GetInt32(r.GetOrdinal("tichet_id")),
+            NumarTichet:      r.GetString(r.GetOrdinal("numar_tichet")),
+            Titlu:            r.GetString(r.GetOrdinal("titlu")),
+            Descriere:        DatabaseService.GetNullableString(r, "descriere"),
+            Client:           r.GetString(r.GetOrdinal("client")),
+            Categorie:        r.GetString(r.GetOrdinal("categorie")),
+            Departament:      r.GetString(r.GetOrdinal("departament")),
+            Prioritate:       r.GetString(r.GetOrdinal("prioritate")),
+            Status:           r.GetString(r.GetOrdinal("status")),
+            Tip:              r.GetString(r.GetOrdinal("tip")),
+            Tehnician:        r.GetString(r.GetOrdinal("tehnician")),
+            NivelTehnician:   DatabaseService.GetNullableString(r, "nivel_tehnician"),
+            TipSla:           DatabaseService.GetNullableString(r, "tip_sla"),
+            TimpRaspunsOre:   DatabaseService.GetNullable<int>(r, "timp_raspuns_ore"),
+            TimpRezolvareOre: DatabaseService.GetNullable<int>(r, "timp_rezolvare_ore"),
+            OreDeschis:       r.GetInt32(r.GetOrdinal("ore_deschis")),
+            SlaDepasit:       r.GetInt32(r.GetOrdinal("sla_depasit")) == 1,
+            DataDeschidere:   r.GetDateTime(r.GetOrdinal("data_deschidere")),
+            DataRezolvare:    DatabaseService.GetNullable<System.DateTime>(r, "data_rezolvare"),
+            DataInchidere:    DatabaseService.GetNullable<System.DateTime>(r, "data_inchidere"),
+            OreLucrate:       DatabaseService.GetNullable<decimal>(r, "ore_lucrate"),
+            RatingClient:     DatabaseService.GetNullable<int>(r, "rating_client"));
+    }
+
+    // Adauga un comentariu in IstoricActivitate. Folosit din drawer.
+    public async Task AddCommentAsync(int tichetId, string mesaj, int? userId)
+    {
+        await using var conn = await _db.OpenConnectionAsync();
+        await using var cmd = new SqlCommand(@"
+            INSERT INTO IstoricActivitate (tichet_id, tip_activitate, mesaj, efectuat_de)
+            VALUES (@tid, N'COMMENT', @msg, @uid)", conn);
+        cmd.Parameters.AddWithValue("@tid", tichetId);
+        cmd.Parameters.AddWithValue("@msg", mesaj);
+        cmd.Parameters.AddWithValue("@uid", (object?)userId ?? System.DBNull.Value);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
     public async Task<int> OpenTicketAsync(
         string titlu, string? descriere, int clientId, int categorieId,
         string prioritate, string tip, int? tehnicianId, int? createdBy)

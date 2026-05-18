@@ -4,10 +4,34 @@ using Avalonia.ReactiveUI;
 
 namespace ITCareHelpdesk.App;
 
+// ============================================================
+// Program.cs — PUNCTUL DE INTRARE AL APLICATIEI
+// ============================================================
+// Cand Windows lanseaza ITCareHelpdesk.exe, prima functie executata este Program.Main.
+// E echivalentul unui "int main()" din C/C++ — Windows da control-ul aici.
+//
+// Trei responsabilitati:
+//
+//   1. STAThread — atribut obligatoriu pentru aplicatii Windows Forms/WPF/Avalonia.
+//      Garanteaza ca firul principal (UI thread) este "Single-Threaded Apartment", cerinta a
+//      sub-sistemului COM al Windows-ului pentru a interactiona cu controale UI native.
+//
+//   2. Try/Catch global — daca aplicatia explodeaza la pornire (DB inaccesibil, fisier .axaml
+//      cu eroare de parse, dependinta lipsa), prindem exceptia si o scriem intr-un fisier de
+//      crash log local. Fara asta, aplicatia ar muri tacut in fata utilizatorului care nu ar
+//      avea unde sa caute cauza.
+//
+//   3. BuildAvaloniaApp — configureaza runtime-ul:
+//      - UsePlatformDetect: alege automat backend-ul grafic potrivit (Win32, X11, macOS)
+//      - WithInterFont: inregistreaza fontul Inter (pachet Avalonia.Fonts.Inter) ca disponibil global
+//      - LogToTrace: debug logs catre System.Diagnostics
+//      - UseReactiveUI: integrare cu CommunityToolkit.Mvvm si Reactive Extensions
+//
+// StartWithClassicDesktopLifetime intra in bucla de mesaje a Windows si lanseaza fereastra
+// principala configurata din App.axaml.cs.
+// ============================================================
 internal static class Program
 {
-    // Avalonia cere ca initializarea sa fie pe acest pattern static — atribuim
-    // exceptiile globale aici ca sa nu cadem in tacere daca explodeaza ceva in startup.
     [STAThread]
     public static void Main(string[] args)
     {

@@ -5,6 +5,25 @@ using ITCareHelpdesk.App.Models;
 
 namespace ITCareHelpdesk.App.Services;
 
+// ============================================================
+// HistoryRepository
+// ============================================================
+// Repository pentru tabela "IstoricActivitate" — log-ul de business pe tichete.
+// Fiecare actiune semnificativa (creare, schimbare status, comentariu, asignare, time-tracking)
+// genereaza o intrare aici.
+//
+// Important: aceasta tabela e separata de "AuditTrail" (din 02_extensions.sql).
+//   - IstoricActivitate = log de business, vizibil userilor, afisat in timeline
+//   - AuditTrail = log tehnic generic, alimentat de trigger SQL, pentru audit/compliance
+//
+// Metode:
+//   GetAsync          - intoarce istoricul filtrat (toate dimensiunile optionale)
+//   GetForTicketAsync - shortcut pentru ecranul "Detail drawer" — luam istoricul unui singur
+//                       tichet pe ultimele 365 zile (practic tot ce s-a intamplat)
+//
+// Apeleaza sp_GetIstoricActivitate (procedura SQL) care formateaza data ca string romanesc
+// ("dd MMM yyyy HH:mm"), asa UI-ul nu trebuie sa stie de format.
+// ============================================================
 public sealed class HistoryRepository
 {
     private readonly DatabaseService _db;
@@ -27,4 +46,9 @@ public sealed class HistoryRepository
             ("@client_id",   (object?)clientId),
             ("@tichet_id",   (object?)tichetId),
             ("@zile_inapoi", days));
+
+    // Specializare pentru drawer — luam istoricul unui singur tichet pe ultimii 365 zile.
+    // Folosim acelasi SP cu zile_inapoi marit la 365 ca sa luam tot.
+    public Task<List<HistoryEntry>> GetForTicketAsync(int tichetId) =>
+        GetAsync(clientId: null, tichetId: tichetId, days: 365);
 }

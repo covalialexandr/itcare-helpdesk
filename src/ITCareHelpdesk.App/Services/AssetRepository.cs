@@ -5,6 +5,21 @@ using ITCareHelpdesk.App.Models;
 
 namespace ITCareHelpdesk.App.Services;
 
+// ============================================================
+// AssetRepository
+// ============================================================
+// Repository pentru tabela "Assets" — inventarul de echipamente IT al clientilor:
+// laptopuri, servere, switch-uri, imprimante, firewalls, etc.
+//
+// GetAllAsync include un JOIN cu tabela Clienti pentru a returna direct numele clientului
+// (NU doar client_id). Aceasta denormalizare la nivel de query salveaza un al doilea
+// SELECT din C# si simplifica template-ul din XAML — randul din tabel poate afisa
+// "Aurora Industries" direct, fara binding indirect.
+//
+// Pagina Asset-uri (AssetsView) consuma aceasta lista, filtreaza pe tip echipament
+// si pe text liber. Nu avem CRUD activ inca — assets-urile se introduc din SQL seed
+// sau de la administrator prin SSMS. Pe viitor poate intra editor in UI.
+// ============================================================
 public sealed class AssetRepository
 {
     private readonly DatabaseService _db;

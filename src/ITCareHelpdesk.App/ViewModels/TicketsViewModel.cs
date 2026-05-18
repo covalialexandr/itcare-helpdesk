@@ -9,14 +9,44 @@ using ITCareHelpdesk.App.Services;
 
 namespace ITCareHelpdesk.App.ViewModels;
 
-// Tichetele active sunt cele care opereaza zilnic — viewul nostru e o lista cu filtre.
-// Filtrele se aplica client-side dupa ce am incarcat o singura data; tinem si master-list-ul (_all)
-// pentru a putea reseta filtru fara round-trip nou la DB.
+// ============================================================
+// TicketsViewModel
+// ============================================================
+// ViewModel-ul paginii principale de operatiuni: lista cu toate tichetele active.
+// Cea mai complexa pagina, contine: filtre multiple, integrare cu CreateTicket modal,
+// integrare cu Detail drawer, comanda de inchidere rapida.
+//
+// CONCEPTE CHEIE:
+//
+// 1. Lista master (_all) + lista filtrata (Items)
+//    Citim toate tichetele active o data din baza de date. Filtrele utilizatorului
+//    (prioritate, status, search text, "doar ale mele") se aplica IN MEMORIE asupra
+//    listei master. Asa schimbarile de filtru sunt instant — fara latenta de retea.
+//
+// 2. Notification chains
+//    [ObservableProperty] genereaza automat metode partial void OnXChanged la fiecare
+//    proprietate. Le folosim ca sa re-aplicam filtrele cand userul tasteaza sau alege
+//    din dropdown.
+//
+// 3. Drawer integration
+//    Cand userul da click pe un rand, ShowDetailAsync deschide drawer-ul lateral. Drawer-ul
+//    este SINGLETON in DI (un singur drawer in toata aplicatia), iar TicketsViewModel
+//    primeste o referinta la el prin Detail. Asculta evenimentul TicketChanged ca sa-si
+//    refresheze lista cand drawer-ul anunta o modificare (comentariu nou, inchidere).
+//
+// 4. Volume de tichete intarziate
+//    OverdueCount se calculeaza la load — este metrica afisata in header. Util pentru
+//    operator sa vada rapid daca echipa ramane in urma cu SLA-urile.
+// ============================================================
 public sealed partial class TicketsViewModel : ViewModelBase
 {
     private readonly TicketRepository _tickets;
     private readonly ToastService _toast;
     private readonly SessionService _session;
+
+    // Drawer-ul de detalii este shared (singleton din DI). View-ul nostru il "imprumuta" si
+    // ii expune comenzile via Detail.* binding.
+    public TicketDetailViewModel Detail { get; }
 
     private List<Ticket> _all = new();
 
@@ -33,12 +63,23 @@ public sealed partial class TicketsViewModel : ViewModelBase
     [ObservableProperty] private int _totalCount;
     [ObservableProperty] private int _overdueCount;
 
-    public TicketsViewModel(TicketRepository tickets, ToastService toast, SessionService session)
+    public TicketsViewModel(TicketRepository tickets, ToastService toast, SessionService session,
+                            TicketDetailViewModel detail)
     {
         _tickets = tickets;
         _toast = toast;
         _session = session;
+        Detail = detail;
+        // Cand drawer-ul anunta ca tichetul s-a schimbat (comentariu adaugat, inchis), refresh la lista
+        Detail.TicketChanged += async (_, _) => await LoadAsync();
         _ = LoadAsync();
+    }
+
+    // Apelat din View cand utilizatorul da click pe un rand. Deschide drawer-ul.
+    public async Task ShowDetailAsync(Ticket? ticket)
+    {
+        if (ticket is null) return;
+        await Detail.OpenAsync(ticket.TichetId);
     }
 
     // Re-aplica filtrul cand una din proprietatile observate se schimba.
