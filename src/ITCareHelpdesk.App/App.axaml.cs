@@ -67,14 +67,28 @@ public partial class App : Application
 
     private static void ConfigureServices()
     {
+        // appsettings.json e committed pe git si NU contine secrete.
+        // appsettings.Local.json e gitignored si poate sa overrideze orice — locul potrivit pentru
+        // cheie API, parole DB sau orice altceva care n-are voie pe GitHub. Daca lipseste, nu se intampla nimic
+        // (optional: true) — userul lucreaza doar cu valorile din fisierul de baza.
         var config = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.json",       optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.Local.json", optional: true,  reloadOnChange: true)
             .Build();
 
         var services = new ServiceCollection();
 
         services.AddSingleton<IConfiguration>(config);
+
+        // HttpClient ca singleton — folosit de AiSuggestionService pentru a vorbi cu Claude/Ollama.
+        // Singleton e ok aici pentru ca aplicatia desktop are un singur user activ; nu avem
+        // problema de socket exhaustion specifica unui server web. Daca am avea load mare,
+        // am folosi IHttpClientFactory.
+        services.AddSingleton(_ => new System.Net.Http.HttpClient
+        {
+            Timeout = System.TimeSpan.FromSeconds(60)
+        });
 
         // Servicii infra — singleton pentru ca tin un connection pool intern
         services.AddSingleton<DatabaseService>();

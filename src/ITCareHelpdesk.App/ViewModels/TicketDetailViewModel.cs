@@ -17,10 +17,14 @@ public sealed partial class TicketDetailViewModel : ViewModelBase
     private readonly HistoryRepository _history;
     private readonly SessionService _session;
     private readonly ToastService _toast;
+    private readonly AiSuggestionService _ai;
+
+    public bool AiEnabled => _ai.IsConfigured;
 
     [ObservableProperty] private Ticket? _ticket;
     [ObservableProperty] private string _newComment = "";
     [ObservableProperty] private bool _isOpen;
+    [ObservableProperty] private string? _aiSummary;
 
     public ObservableCollection<HistoryEntry> History { get; } = new();
 
@@ -32,12 +36,41 @@ public sealed partial class TicketDetailViewModel : ViewModelBase
         TicketRepository tickets,
         HistoryRepository history,
         SessionService session,
-        ToastService toast)
+        ToastService toast,
+        AiSuggestionService ai)
     {
         _tickets = tickets;
         _history = history;
         _session = session;
         _toast = toast;
+        _ai = ai;
+    }
+
+    [RelayCommand]
+    private async Task SummarizeAsync()
+    {
+        if (Ticket is null) return;
+        if (!_ai.IsConfigured)
+        {
+            _toast.ShowWarning("AI", "Provider-ul AI nu este configurat (vezi Ai:Provider in appsettings.json).");
+            return;
+        }
+
+        IsBusy = true;
+        BusyMessage = "Cerem rezumat AI...";
+        try
+        {
+            AiSummary = await _ai.SummarizeHistoryAsync(Ticket.NumarTichet, Ticket.Titlu, History);
+            _toast.ShowSuccess("Rezumat AI", "Generat. Vezi panoul de mai sus.");
+        }
+        catch (Exception ex)
+        {
+            _toast.ShowError("AI summary", ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     // Apelat cand utilizatorul da click pe un rand din lista de tichete.
@@ -46,6 +79,7 @@ public sealed partial class TicketDetailViewModel : ViewModelBase
         IsOpen = true;
         IsBusy = true;
         BusyMessage = "Aducem detaliile...";
+        AiSummary = null;  // reset summary la fiecare deschidere
         try
         {
             // Paralelizam fetch-ul ticket + history

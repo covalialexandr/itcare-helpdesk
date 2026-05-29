@@ -314,6 +314,38 @@
                         </Grid>
                     </Border>
 
+                    <!-- ===== AI SUMMARY ===== -->
+                    <Border Background="{DynamicResource BgSurface1}"
+                            BorderBrush="{DynamicResource GlassBorderActive}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="14,12"
+                            IsVisible="{Binding AiEnabled}">
+                        <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                            <Border Grid.Column="0"
+                                    Width="34" Height="34" CornerRadius="17"
+                                    Background="{DynamicResource AccentGradient}">
+                                <TextBlock Text="AI"
+                                           FontSize="10" FontWeight="Black"
+                                           Foreground="#06070D"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="10,0" Spacing="2">
+                                <TextBlock Text="REZUMAT INTELIGENT" Classes="label" />
+                                <TextBlock Text="{Binding AiSummary, FallbackValue='Apasă pe „Generează rezumat” pentru un sumar AI al activității.'}"
+                                           FontSize="11"
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Button Grid.Column="2"
+                                    Classes="ghost"
+                                    Content="🧠 Rezumat"
+                                    Command="{Binding SummarizeCommand}"
+                                    Padding="12,8"
+                                    FontSize="11" />
+                        </Grid>
+                    </Border>
+
                     <!-- ===== TIMELINE ISTORIC ===== -->
                     <StackPanel Spacing="10">
                         <TextBlock Text="ISTORIC ACTIVITATE" Classes="label" />

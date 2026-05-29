@@ -6,6 +6,7 @@
         x:Class="ITCareHelpdesk.App.Views.LoginWindow"
         x:DataType="vm:LoginViewModel"
         Title="ITCare — Autentificare"
+        Icon="avares://ITCareHelpdesk/Assets/itcare-logo.ico"
         Width="1100" Height="720"
         MinWidth="960" MinHeight="640"
         WindowStartupLocation="CenterScreen"
@@ -156,17 +157,17 @@
                             <Grid ColumnDefinitions="*,12,*" Margin="0,6,0,0">
                                 <StackPanel Grid.Column="0" Spacing="6">
                                     <TextBlock Text="USERNAME" Classes="label" />
-                                    <TextBox Text="{Binding NewUsername, Mode=TwoWay}" Watermark="anatol.ovali" />
+                                    <TextBox Text="{Binding NewUsername, Mode=TwoWay}" Watermark="Alex.Covali" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" Spacing="6">
                                     <TextBlock Text="NUME COMPLET" Classes="label" />
-                                    <TextBox Text="{Binding NewFullName, Mode=TwoWay}" Watermark="Anatol Ovali" />
+                                    <TextBox Text="{Binding NewFullName, Mode=TwoWay}" Watermark="Alexandr Covali" />
                                 </StackPanel>
                             </Grid>
 
                             <StackPanel Spacing="6">
                                 <TextBlock Text="EMAIL" Classes="label" />
-                                <TextBox Text="{Binding NewEmail, Mode=TwoWay}" Watermark="anatol@itcare.ro" />
+                                <TextBox Text="{Binding NewEmail, Mode=TwoWay}" Watermark="acovali@itcare.ro" />
                             </StackPanel>
 
                             <Grid ColumnDefinitions="*,12,*">

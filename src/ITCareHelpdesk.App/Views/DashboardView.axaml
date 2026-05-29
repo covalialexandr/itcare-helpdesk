@@ -258,6 +258,31 @@
                 </Grid>
             </Border>
 
+            <!-- Heatmap 7x24 — volum tichete pe zi x ora. Pentru capacity planning. -->
+            <Border Classes="card">
+                <Grid RowDefinitions="Auto,*">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                        <StackPanel Grid.Column="0" Spacing="4">
+                            <TextBlock Text="TIPOLOGIA VOLUMULUI" Classes="label" />
+                            <TextBlock Text="Heatmap 7 zile × 24 ore" Classes="h3" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Classes="pill"
+                                Background="{DynamicResource GlassFill}"
+                                BorderBrush="{DynamicResource GlassBorderActive}"
+                                BorderThickness="1">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="◌" Foreground="{DynamicResource Accent}" FontSize="10" VerticalAlignment="Center" />
+                                <TextBlock Text="capacity planning" Classes="label" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <controls:HeatmapChart Grid.Row="1"
+                                            Values="{Binding HeatmapData}"
+                                            MinHeight="260" />
+                </Grid>
+            </Border>
+
             <!-- Distributie pe categorii cu bare orizontale -->
             <Border Classes="card">
                 <Grid RowDefinitions="Auto,*">

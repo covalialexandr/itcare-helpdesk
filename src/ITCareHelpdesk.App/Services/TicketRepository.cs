@@ -21,6 +21,35 @@ public sealed class TicketRepository
             CommandType.Text,
             MapTicket);
 
+    // Tichete inchise — folosit ca knowledge base de catre AI pentru a gasi tichete similare
+    // (cand userul creeaza un tichet nou, intrebam Claude care din astea inchise seamana cel mai bine).
+    public Task<List<Ticket>> GetClosedAsync(int max = 50) =>
+        _db.QueryAsync(
+            $@"SELECT TOP ({max})
+                t.tichet_id, t.numar_tichet, t.titlu, t.descriere,
+                c.nume_companie AS client,
+                cat.nume_categorie AS categorie,
+                d.nume_departament AS departament,
+                t.prioritate, t.status, t.tip,
+                ISNULL(teh.prenume + N' ' + teh.nume, N'—') AS tehnician,
+                NULL AS nivel_tehnician,
+                NULL AS tip_sla,
+                CAST(NULL AS INT) AS timp_raspuns_ore,
+                CAST(NULL AS INT) AS timp_rezolvare_ore,
+                ISNULL(DATEDIFF(HOUR, t.data_deschidere, t.data_rezolvare), 0) AS ore_deschis,
+                0 AS sla_depasit,
+                t.data_deschidere,
+                t.ore_lucrate
+              FROM Tichete t
+              JOIN Clienti c          ON t.client_id    = c.client_id
+              JOIN Categorii cat      ON t.categorie_id = cat.categorie_id
+              JOIN Departamente d     ON cat.departament_id = d.departament_id
+              LEFT JOIN Tehnicieni teh ON t.tehnician_id = teh.tehnician_id
+              WHERE t.status IN (N'CLOSED', N'RESOLVED')
+              ORDER BY t.data_inchidere DESC",
+            CommandType.Text,
+            MapTicket);
+
     public Task<List<Ticket>> GetOverdueAsync(string? departament = null, string? prioritate = null) =>
         _db.QueryAsync(
             "sp_GetTicheteIntarziate",

@@ -141,6 +141,23 @@ public sealed class StatsRepository
                 Status: r.GetString(0),
                 Count:  r.GetInt32(1)));
 
+    // Heatmap 7x24 — pentru fiecare combinatie (zi a saptamanii × ora a zilei) contam tichetele
+    // deschise. Util pentru capacity planning: "luni la 9 dim avem mereu pică". Folosim DATEPART
+    // direct in GROUP BY — performanta acceptabila pentru volume mici si medii (sub 100k tichete).
+    public Task<List<HeatmapCell>> GetHeatmapAsync() =>
+        _db.QueryAsync(
+            @"SELECT
+                DATEPART(WEEKDAY, data_deschidere) AS zi_saptamana,
+                DATEPART(HOUR, data_deschidere)    AS ora,
+                COUNT(*)                            AS nr_tichete
+              FROM Tichete
+              GROUP BY DATEPART(WEEKDAY, data_deschidere), DATEPART(HOUR, data_deschidere)",
+            CommandType.Text,
+            r => new HeatmapCell(
+                ZiSaptamana: r.GetInt32(0),
+                Ora:         r.GetInt32(1),
+                NrTichete:   r.GetInt32(2)));
+
     // Rezolvate per zi, ultimele N zile. Folosim CTE cu date generate ca sa avem si zilele "cu 0",
     // altfel chart-ul ar avea gauri si trendline-ul ar fi confuz.
     public Task<List<DailyResolved>> GetResolvedByDayAsync(int zile = 7) =>

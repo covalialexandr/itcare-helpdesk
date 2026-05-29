@@ -12,6 +12,9 @@
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <RootNamespace>ITCareHelpdesk.App</RootNamespace>
         <AssemblyName>ITCareHelpdesk</AssemblyName>
+        <!-- Icon-ul aplicatiei in Explorer si pe taskbar. Windows cere .ico cu multiple resolutii embedded;
+             al nostru are 16/32/48/64/128/256 in acelasi fisier, deci Windows alege ce-i potriveste pe DPI-ul curent. -->
+        <ApplicationIcon>Assets\itcare-logo.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>

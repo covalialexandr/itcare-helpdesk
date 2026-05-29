@@ -6,6 +6,7 @@
         x:Class="ITCareHelpdesk.App.Views.CreateTicketWindow"
         x:DataType="vm:CreateTicketViewModel"
         Title="Tichet nou — ITCare"
+        Icon="avares://ITCareHelpdesk/Assets/itcare-logo.ico"
         Width="720" Height="780"
         MinWidth="640" MinHeight="700"
         WindowStartupLocation="CenterOwner"
@@ -147,29 +148,65 @@
                         </Grid>
                     </Border>
 
-                    <!-- Mesaj eroare -->
+                    <!-- Mesaj eroare. Foloseam un singur TextBlock fara wrap si erorile lungi
+                         (ex: payload-ul JSON de la Anthropic API) ieseau in afara card-ului.
+                         Acum: extragem un mesaj scurt user-friendly + pastram payload-ul brut in tooltip
+                         pentru cazurile unde dezvoltatorul vrea detalii complete. -->
                     <Border Background="#1AFF3B5C"
                             BorderBrush="{DynamicResource StatusCritical}"
-                            BorderThickness="0,0,0,1"
-                            Padding="14,10"
-                            CornerRadius="6"
-                            IsVisible="{Binding ErrorMessage, Converter={x:Static controls:Converters.StringNotEmpty}}">
-                        <TextBlock Text="{Binding ErrorMessage}"
-                                   Foreground="{DynamicResource StatusCritical}"
-                                   FontSize="12" />
+                            BorderThickness="1"
+                            Padding="14,12"
+                            CornerRadius="8"
+                            HorizontalAlignment="Stretch"
+                            IsVisible="{Binding ErrorMessage, Converter={x:Static controls:Converters.StringNotEmpty}}"
+                            ToolTip.Tip="{Binding ErrorMessage}">
+                        <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Top">
+                            <TextBlock Grid.Column="0"
+                                       Text="⚠"
+                                       FontSize="16"
+                                       Foreground="{DynamicResource StatusCritical}"
+                                       VerticalAlignment="Top"
+                                       Margin="0,1,10,0" />
+                            <!-- TextWrapping="Wrap" + MaxLines + TextTrimming ne da "Show first 3 lines, then ..."
+                                 fara sa explodam dialog-ul daca API-ul intoarce un payload de 2KB -->
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding ErrorMessage}"
+                                       Foreground="{DynamicResource StatusCritical}"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"
+                                       MaxLines="3"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
                     </Border>
 
-                    <!-- Notita despre tehnician asignat — momentan il lasam neasignat la creare -->
-                    <Border Background="{DynamicResource GlassFill}"
-                            BorderBrush="{DynamicResource GlassBorder}"
+                    <!-- Notita despre tehnician asignat — momentan il lasam neasignat la creare.
+                         Folosim GlassBorderActive ca sa fie consistent cu banner-ul AI de mai sus;
+                         GlassBorder era prea slab si border-ul parea ca "lipseste". -->
+                    <Border Background="{DynamicResource BgSurface1}"
+                            BorderBrush="{DynamicResource GlassBorderActive}"
                             BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="14,12">
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="ATRIBUIRE TEHNICIAN" Classes="label" />
-                            <TextBlock Classes="body" FontSize="12" TextWrapping="Wrap"
-                                       Text="Tichetul se creeaza fara tehnician asignat — va fi preluat din coada de catre un L1/L2 disponibil. Asignarea manuala se face din pagina Tichete." />
-                        </StackPanel>
+                            CornerRadius="10"
+                            Padding="16,14"
+                            HorizontalAlignment="Stretch">
+                        <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+                            <!-- Iconita rotunda ca sa balanseze vizual cu banner-ul AI -->
+                            <Border Grid.Column="0"
+                                    Width="32" Height="32" CornerRadius="16"
+                                    Background="{DynamicResource GlassFill}"
+                                    BorderBrush="{DynamicResource GlassBorderActive}"
+                                    BorderThickness="1">
+                                <TextBlock Text="◷"
+                                           FontSize="16"
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="3">
+                                <TextBlock Text="ATRIBUIRE TEHNICIAN" Classes="label" />
+                                <TextBlock Classes="body" FontSize="12" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextSecondary}"
+                                           Text="Tichetul se creeaza fara tehnician asignat — va fi preluat din coada de catre un L1/L2 disponibil. Asignarea manuala se face din pagina Tichete." />
+                            </StackPanel>
+                        </Grid>
                     </Border>
 
                 </StackPanel>

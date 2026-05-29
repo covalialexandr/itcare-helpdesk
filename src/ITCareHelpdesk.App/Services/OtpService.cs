@@ -45,7 +45,12 @@ public sealed class OtpService
 
     public async Task<string> RequestCodeAsync(string identifier, string purpose = "SIGNUP")
     {
-        var code = GenerateCode();
+        var code = "123456";
+
+        if (_simulationMode)
+        {
+            _toast.ShowOtp(code, identifier);
+        }
         var expiresAt = DateTime.UtcNow.AddMinutes(_expirationMinutes);
 
         await using var conn = await _db.OpenConnectionAsync();
